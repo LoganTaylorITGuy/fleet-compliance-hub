@@ -43,6 +43,14 @@ All notable changes to this project are documented here. The format follows
   shop repair, which resolves its DVIR defect), Hours of Service (7-day grid with
   violations highlighted, labeled as synced from Motive (mock)) and Training
   (academy student progress, mark course complete, certification expirations).
+- Spreadsheet import for drivers, vehicles, training, drug tests and
+  maintenance: upload .xlsx/.csv, preview, column matching suggested from
+  headers, saved mapping templates, validation (dates in many formats, required
+  fields, bad values, duplicates in the file), fix or skip rows in place, then
+  import with history and undo of the last import.
+- Export to Excel on Drivers, Fleet, Hours of Service, Training and Audit log,
+  with spreadsheet formula injection escaped.
+- Messy sample spreadsheets in `samples/` and a script to regenerate them.
 
 ### Fixed
 

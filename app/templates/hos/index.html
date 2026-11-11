@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "partials/macros.html" import record_link with context %}
+{% from "partials/macros.html" import record_link, export_button with context %}
 {% set page_title = "Hours of Service" %}
 {% block content %}
 <div class="flex flex-wrap items-end justify-between gap-3">
@@ -10,11 +10,14 @@
       {% if last_synced %}Last sync {{ last_synced|localtime }}.{% endif %}
     </p>
   </div>
+  <div class="flex flex-wrap items-center gap-4">
+  {{ export_button("hos") }}
   <form method="get" data-autosubmit class="flex items-center gap-2 text-sm">
     <input id="violations" type="checkbox" name="violations" value="1" {% if violations_only %}checked{% endif %} class="h-4 w-4">
     <label for="violations">Violations only</label>
     <noscript><button type="submit" class="rounded bg-blue-700 px-2 py-1 text-white">Apply</button></noscript>
   </form>
+  </div>
 </div>
 
 {% if violation_count %}

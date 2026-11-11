@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% from "partials/macros.html" import status_badge, record_link, filter_bar, th with context %}
+{% from "partials/macros.html" import status_badge, record_link, filter_bar, th, export_button with context %}
 {% set page_title = "Fleet" %}
 {% block content %}
-<h1 class="text-2xl font-bold">Fleet</h1>
+<div class="flex flex-wrap items-center justify-between gap-3"><h1 class="text-2xl font-bold">Fleet</h1>{{ export_button("fleet") }}</div>
 <p class="mt-1 text-sm text-slate-600">{{ rows|length }} tractors and trailers shown.</p>
 {% set type_select %}
   <div>

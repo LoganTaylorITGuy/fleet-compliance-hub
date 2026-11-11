@@ -9,8 +9,8 @@ from .factories import DEMO_PASSWORD, make_provider, make_tenant, make_user, pop
 
 
 @pytest.fixture
-def app():
-    app = create_app(TestConfig)
+def app(tmp_path):
+    app = create_app(TestConfig, UPLOAD_FOLDER=str(tmp_path / "uploads"))
     with app.app_context():
         db.create_all()
         yield app
@@ -79,6 +79,7 @@ ROUTE_MODULES_USING_TODAY = (
     "app.fleet.routes",
     "app.hos.routes",
     "app.training.routes",
+    "app.exports",
 )
 
 
