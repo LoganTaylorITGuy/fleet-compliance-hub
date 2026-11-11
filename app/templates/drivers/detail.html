@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import status_badge, fact, findings_panel, th with context %}
 {% set page_title = driver.full_name %}
+{% set recent_kind = "Driver" %}
 {% block content %}
-<p class="text-sm"><a href="{{ url_for('drivers.index') }}" class="text-blue-700 underline">← All drivers</a></p>
+<p class="text-sm"><a href="{{ url_for('drivers.index') }}" class="text-link underline">← All drivers</a></p>
 <div class="mt-2 flex flex-wrap items-center gap-3">
   <h1 class="text-2xl font-bold">{{ driver.full_name }}</h1>
   {{ status_badge(status.level, size="md") }}
-  {% if driver.is_student %}<span class="rounded bg-slate-200 px-2 py-0.5 text-xs font-semibold">Academy student</span>{% endif %}
+  {% if driver.is_student %}<span class="rounded bg-tint/10 px-2 py-0.5 text-xs font-semibold">Academy student</span>{% endif %}
 </div>
 
 <div class="mt-6 grid gap-6 lg:grid-cols-3">
-  <section aria-labelledby="profile-h" class="self-start rounded-lg bg-white p-4 ring-1 ring-slate-200 lg:col-span-2">
+  <section aria-labelledby="profile-h" class="self-start rounded-2xl glass p-4 lg:col-span-2">
     <h2 id="profile-h" class="text-base font-semibold">Qualification summary</h2>
     <dl class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
       {{ fact("CDL number", driver.cdl_number) }}
@@ -24,18 +25,18 @@
   </section>
 
   {% if form %}
-  <section aria-labelledby="edit-h" class="rounded-lg bg-white p-4 ring-1 ring-slate-200">
+  <section aria-labelledby="edit-h" class="rounded-2xl glass p-4">
     <h2 id="edit-h" class="text-base font-semibold">Update record</h2>
     <form method="post" action="{{ url_for('drivers.edit', driver_id=driver.id) }}" class="mt-3 space-y-3">
       {{ form.csrf_token }}
       {% for field in (form.medical_card_expiration, form.cdl_expiration, form.status, form.phone) %}
         <div>
-          {{ field.label(class="block text-xs font-medium text-slate-700") }}
-          {{ field(class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm") }}
+          {{ field.label(class="block text-xs font-medium text-muted") }}
+          {{ field(class="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm") }}
         </div>
       {% endfor %}
-      <button type="submit" class="w-full rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800">Save</button>
-      <p class="text-xs text-slate-600">Changes are recorded in the audit log.</p>
+      <button type="submit" class="w-full rounded-md btn-primary px-3 py-2 text-sm font-semibold">Save</button>
+      <p class="text-xs text-muted">Changes are recorded in the audit log.</p>
     </form>
   </section>
   {% endif %}
@@ -44,12 +45,12 @@
 <div class="mt-6 grid gap-6 lg:grid-cols-2">
   <section aria-labelledby="file-h">
     <h2 id="file-h" class="text-lg font-semibold">Driver qualification file</h2>
-    <ul class="mt-2 divide-y divide-slate-100 rounded-lg bg-white ring-1 ring-slate-200">
+    <ul class="mt-2 divide-y divide-line/70 rounded-2xl glass">
       {% for key, label, item in checklist %}
         <li class="flex flex-wrap items-baseline justify-between gap-2 px-4 py-3 text-sm">
-          <span class="font-medium">{% if item and item.completed_on %}<span aria-hidden="true" class="text-emerald-700">✓ </span>{% else %}<span aria-hidden="true" class="text-red-700">✗ </span>{% endif %}{{ label }}</span>
-          <span class="tabular-nums text-slate-700">
-            {% if item and item.completed_on %}Done {{ item.completed_on|shortdate }}{% else %}<span class="font-semibold text-red-800">Not on file</span>{% endif %}
+          <span class="font-medium">{% if item and item.completed_on %}<span aria-hidden="true" class="text-ok-ink">✓ </span>{% else %}<span aria-hidden="true" class="text-danger-ink">✗ </span>{% endif %}{{ label }}</span>
+          <span class="tabular-nums text-muted">
+            {% if item and item.completed_on %}Done {{ item.completed_on|shortdate }}{% else %}<span class="font-semibold text-danger-ink">Not on file</span>{% endif %}
             {% if item and item.due_on %} · next due {{ item.due_on|shortdate }}{% endif %}
           </span>
         </li>
@@ -59,17 +60,17 @@
 
   <section aria-labelledby="tests-h">
     <h2 id="tests-h" class="text-lg font-semibold">Drug and alcohol tests</h2>
-    <div class="mt-2 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
-      <table class="min-w-full divide-y divide-slate-200 text-sm">
-        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-600"><tr>{{ th("Date") }}{{ th("Type") }}{{ th("Result") }}</tr></thead>
-        <tbody class="divide-y divide-slate-100">
+    <div class="mt-2 overflow-x-auto rounded-2xl glass">
+      <table class="min-w-full divide-y divide-line text-sm">
+        <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase text-muted"><tr>{{ th("Date") }}{{ th("Type") }}{{ th("Result") }}</tr></thead>
+        <tbody class="divide-y divide-line/70">
           {% for t in tests %}
             <tr>
               <td class="px-4 py-2 tabular-nums">{{ t.tested_on|shortdate }}</td>
               <td class="px-4 py-2">{{ t.test_type|label }}</td>
-              <td class="px-4 py-2 {{ 'font-semibold text-red-800' if t.result in ('positive', 'refused') else '' }}">{{ t.result|label }}</td>
+              <td class="px-4 py-2{{ 'font-semibold text-danger-ink' if t.result in ('positive', 'refused') else '' }}">{{ t.result|label }}</td>
             </tr>
-          {% else %}<tr><td colspan="3" class="px-4 py-4 text-slate-600">No tests on file.</td></tr>{% endfor %}
+          {% else %}<tr><td colspan="3" class="px-4 py-4 text-muted">No tests on file.</td></tr>{% endfor %}
         </tbody>
       </table>
     </div>
@@ -77,13 +78,13 @@
 
   <section aria-labelledby="training-h">
     <h2 id="training-h" class="text-lg font-semibold">Training</h2>
-    <div class="mt-2 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
-      <table class="min-w-full divide-y divide-slate-200 text-sm">
-        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-600"><tr>{{ th("Course") }}{{ th("Completed") }}{{ th("Expires") }}</tr></thead>
-        <tbody class="divide-y divide-slate-100">
+    <div class="mt-2 overflow-x-auto rounded-2xl glass">
+      <table class="min-w-full divide-y divide-line text-sm">
+        <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase text-muted"><tr>{{ th("Course") }}{{ th("Completed") }}{{ th("Expires") }}</tr></thead>
+        <tbody class="divide-y divide-line/70">
           {% for t in trainings %}
             <tr><td class="px-4 py-2">{{ t.course_name }}</td><td class="px-4 py-2 tabular-nums">{{ t.completed_on|shortdate or "In progress" }}</td><td class="px-4 py-2 tabular-nums">{{ t.expires_on|shortdate }}</td></tr>
-          {% else %}<tr><td colspan="3" class="px-4 py-4 text-slate-600">No training on file.</td></tr>{% endfor %}
+          {% else %}<tr><td colspan="3" class="px-4 py-4 text-muted">No training on file.</td></tr>{% endfor %}
         </tbody>
       </table>
     </div>
@@ -91,19 +92,19 @@
 
   <section aria-labelledby="hours-h">
     <h2 id="hours-h" class="text-lg font-semibold">Hours of service, last 7 days</h2>
-    <p class="text-xs text-slate-600">Synced from Motive (mock)</p>
-    <div class="mt-2 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
-      <table class="min-w-full divide-y divide-slate-200 text-sm">
-        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-600"><tr>{{ th("Date") }}{{ th("Driving") }}{{ th("On duty") }}{{ th("Violation") }}</tr></thead>
-        <tbody class="divide-y divide-slate-100">
+    <p class="text-xs text-muted">Synced from Motive (mock)</p>
+    <div class="mt-2 overflow-x-auto rounded-2xl glass">
+      <table class="min-w-full divide-y divide-line text-sm">
+        <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase text-muted"><tr>{{ th("Date") }}{{ th("Driving") }}{{ th("On duty") }}{{ th("Violation") }}</tr></thead>
+        <tbody class="divide-y divide-line/70">
           {% for log in hours %}
-            <tr class="{{ 'bg-red-50' if log.violation else '' }}">
+            <tr class="{{ 'bg-danger-soft/70' if log.violation else '' }}">
               <td class="px-4 py-2 tabular-nums">{{ log.log_date.strftime("%a %Y-%m-%d") }}</td>
               <td class="px-4 py-2 tabular-nums">{{ "%.2f"|format(log.driving_hours) }} h</td>
               <td class="px-4 py-2 tabular-nums">{{ "%.2f"|format(log.on_duty_hours) }} h</td>
-              <td class="px-4 py-2">{% if log.violation %}<span class="font-semibold text-red-800"><span aria-hidden="true">● </span>{{ log.violation_note or "Violation" }}</span>{% else %}None{% endif %}</td>
+              <td class="px-4 py-2">{% if log.violation %}<span class="font-semibold text-danger-ink"><span aria-hidden="true">● </span>{{ log.violation_note or "Violation" }}</span>{% else %}None{% endif %}</td>
             </tr>
-          {% else %}<tr><td colspan="4" class="px-4 py-4 text-slate-600">No logs in the last 7 days.</td></tr>{% endfor %}
+          {% else %}<tr><td colspan="4" class="px-4 py-4 text-muted">No logs in the last 7 days.</td></tr>{% endfor %}
         </tbody>
       </table>
     </div>

@@ -57,6 +57,7 @@ def _register_blueprints(app: Flask) -> None:
     from .imports import bp as imports_bp
     from .integrations import bp as integrations_bp
     from .main import bp as main_bp
+    from .search import bp as search_bp
     from .training import bp as training_bp
 
     app.register_blueprint(auth_bp)
@@ -70,6 +71,7 @@ def _register_blueprints(app: Flask) -> None:
         imports_bp,
         exports_bp,
         integrations_bp,
+        search_bp,
     ):
         app.register_blueprint(feature_bp)
     app.register_blueprint(audit_bp)

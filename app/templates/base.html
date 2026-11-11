@@ -1,64 +1,44 @@
 <!doctype html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en" class="h-full">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
   <title>{% block title %}{{ page_title|default('Fleet Compliance Hub') }}{% endblock %} · {{ provider_name }}</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  {# Applies a saved Light/Dark choice before first paint (no flash). Not deferred on purpose. #}
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
-<body class="h-full text-slate-900 antialiased">
-  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:shadow">Skip to main content</a>
+{% from "partials/icons.html" import icon, theme_switch with context %}
+<body class="flex min-h-full flex-col font-sans text-ink antialiased"{% if current_user.is_authenticated %} data-user="{{ current_user.id }}" data-tenant="{{ active_tenant.id if active_tenant else 'none' }}"{% if not skip_recent %} data-recent-title="{{ recent_title|default(page_title|default('')) }}" data-recent-kind="{{ recent_kind|default('Page') }}"{% endif %}{% endif %}>
+  <a href="#main" class="glass sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:px-4 focus:py-2">Skip to main content</a>
 
-  <div class="flex min-h-full flex-col md:flex-row">
-    {% block sidebar %}
-    {# Mobile top bar #}
-    <header class="flex items-center justify-between bg-slate-900 px-4 py-3 text-white md:hidden">
-      <a href="{{ url_for('main.index') }}" class="font-semibold">Fleet Compliance Hub</a>
-      <button type="button" class="rounded px-3 py-2 text-sm ring-1 ring-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              data-toggle-target="sidebar" aria-controls="sidebar" aria-expanded="false">
-        Menu
-      </button>
-    </header>
+  {% include "partials/header.html" %}
 
-    <nav id="sidebar" aria-label="Main" class="hidden w-full shrink-0 bg-slate-900 text-slate-100 md:block md:w-64">
-      <div class="hidden px-6 py-5 md:block">
-        <a href="{{ url_for('main.index') }}" class="block text-lg font-semibold leading-tight text-white">Fleet Compliance Hub</a>
-        <p class="mt-1 text-xs text-slate-300">{{ provider_name }}</p>
-      </div>
-      {% include "partials/sidebar_context.html" %}
-      <ul class="space-y-1 px-3 pb-6 pt-2 md:pt-0">
-        {% for item in nav_items() %}
-          {% set active = request.endpoint == item.endpoint or (request.endpoint and request.endpoint.split('.')[0] == item.endpoint.split('.')[0] and item.endpoint.endswith('.index')) %}
-          <li>
-            <a href="{{ url_for(item.endpoint) }}"
-               class="block rounded-md px-3 py-2 text-sm font-medium {{ 'bg-slate-700 text-white' if active else 'text-slate-200 hover:bg-slate-800 hover:text-white' }} focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-               {% if active %}aria-current="page"{% endif %}>{{ item.label }}</a>
-          </li>
-        {% endfor %}
-      </ul>
-      {% include "partials/user_menu.html" %}
-    </nav>
-    {% endblock %}
+  <main id="main" tabindex="-1" class="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6 sm:px-6 md:py-8 lg:px-10 {{ 'pb-32' if current_user.is_authenticated }}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-5 space-y-2" role="status" aria-live="polite">
+          {% for category, message in messages %}
+            <p class="glass rounded-2xl border-l-4 px-4 py-3 text-sm font-medium {{ {'error': 'border-l-danger-solid text-danger-ink', 'warning': 'border-l-warn-line text-warn-ink'}.get(category, 'border-l-ok-line text-ok-ink') }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
 
-    <div class="flex min-w-0 flex-1 flex-col">
-      <main id="main" tabindex="-1" class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="mb-4 space-y-2" role="status" aria-live="polite">
-              {% for category, message in messages %}
-                <p class="rounded-md border px-4 py-3 text-sm {{ {'error': 'border-red-300 bg-red-50 text-red-900', 'warning': 'border-amber-300 bg-amber-50 text-amber-900'}.get(category, 'border-emerald-300 bg-emerald-50 text-emerald-900') }}">{{ message }}</p>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
-      </main>
-      <footer class="border-t border-slate-200 bg-white px-4 py-4 text-center text-xs text-slate-600 sm:px-6">
-        Demo only. Not legal or regulatory advice. Rules simplified for illustration.
-      </footer>
-    </div>
-  </div>
+  <footer class="px-4 pb-5 text-center text-xs text-subtle sm:px-6 {{ 'mb-20' if current_user.is_authenticated }}">
+    Demo only. Not legal or regulatory advice. Rules simplified for illustration.
+  </footer>
+
+  {% if current_user.is_authenticated %}
+    {% include "partials/dock.html" %}
+    {% include "partials/overlays.html" %}
+  {% else %}
+    {% include "partials/help_dialog.html" %}
+  {% endif %}
 </body>
 </html>

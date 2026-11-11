@@ -3,34 +3,34 @@
 {% set page_title = "Training" %}
 {% block content %}
 <div class="flex flex-wrap items-center justify-between gap-3"><h1 class="text-2xl font-bold">Training</h1>{{ export_button("training") }}</div>
-<p class="mt-1 text-sm text-slate-600">Academy students' progress and every driver's certifications.</p>
+<p class="mt-1 text-sm text-muted">Academy students' progress and every driver's certifications.</p>
 
 {% if students %}
 <section aria-labelledby="students-h" class="mt-6">
   <h2 id="students-h" class="text-lg font-semibold">Academy students</h2>
   <ul class="mt-2 grid gap-4 md:grid-cols-2">
     {% for s in students %}
-      <li class="rounded-lg bg-white p-4 ring-1 ring-slate-200">
+      <li class="rounded-2xl glass p-4">
         <div class="flex items-baseline justify-between gap-2">
           <span>{{ record_link(s.driver) }}</span>
-          <span class="text-sm tabular-nums text-slate-700">{{ s.done }} of {{ s.total }} courses</span>
+          <span class="text-sm tabular-nums text-muted">{{ s.done }} of {{ s.total }} courses</span>
         </div>
-        <div class="mt-2 h-2 rounded-full bg-slate-200" role="progressbar" aria-label="{{ s.driver.full_name }} course progress" aria-valuemin="0" aria-valuemax="{{ s.total }}" aria-valuenow="{{ s.done }}">
-          <div class="h-2 rounded-full bg-emerald-600 progress-{{ (s.done * 4 // (s.total or 1)) }}"></div>
+        <div class="mt-2 h-2 rounded-full bg-tint/10" role="progressbar" aria-label="{{ s.driver.full_name }} course progress" aria-valuemin="0" aria-valuemax="{{ s.total }}" aria-valuenow="{{ s.done }}">
+          <div class="h-2 rounded-full bg-ok-solid progress-{{ (s.done * 4 // (s.total or 1)) }}"></div>
         </div>
         <ul class="mt-3 space-y-1.5 text-sm">
           {% for c in s.courses %}
             <li class="flex flex-wrap items-center justify-between gap-2">
-              <span>{% if c.completed_on %}<span aria-hidden="true" class="text-emerald-700">✓ </span>{% else %}<span aria-hidden="true" class="text-slate-400">○ </span>{% endif %}{{ c.course_name }}</span>
+              <span>{% if c.completed_on %}<span aria-hidden="true" class="text-ok-ink">✓ </span>{% else %}<span aria-hidden="true" class="text-subtle">○ </span>{% endif %}{{ c.course_name }}</span>
               {% if c.completed_on %}
-                <span class="tabular-nums text-slate-600">{{ c.completed_on|shortdate }}</span>
+                <span class="tabular-nums text-muted">{{ c.completed_on|shortdate }}</span>
               {% elif action_form %}
                 <form method="post" action="{{ url_for('training.complete', training_id=c.id) }}">
                   {{ action_form.csrf_token }}
-                  <button type="submit" class="rounded bg-emerald-700 px-2 py-1 text-xs font-semibold text-white hover:bg-emerald-800">Mark complete<span class="sr-only">: {{ c.course_name }}</span></button>
+                  <button type="submit" class="rounded btn-ok px-2 py-1 text-xs font-semibold">Mark complete<span class="sr-only">: {{ c.course_name }}</span></button>
                 </form>
               {% else %}
-                <span class="text-slate-600">In progress</span>
+                <span class="text-muted">In progress</span>
               {% endif %}
             </li>
           {% endfor %}
@@ -46,19 +46,19 @@
     <h2 id="certs-h" class="text-lg font-semibold">Driver certifications</h2>
     <form method="get" data-autosubmit class="text-sm">
       <label for="f-show" class="sr-only">Show</label>
-      <select id="f-show" name="show" class="rounded border border-slate-300 px-2 py-1.5">
+      <select id="f-show" name="show" class="rounded border border-line-strong px-2 py-1.5">
         <option value="">All certifications</option>
         <option value="upcoming" {% if show == 'upcoming' %}selected{% endif %}>Expired or expiring in 30 days</option>
       </select>
       <noscript><button type="submit">Apply</button></noscript>
     </form>
   </div>
-  <div class="mt-2 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
-    <table class="min-w-full divide-y divide-slate-200 text-sm">
-      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+  <div class="mt-2 overflow-x-auto rounded-2xl glass">
+    <table class="min-w-full divide-y divide-line text-sm">
+      <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase tracking-wide text-muted">
         <tr>{{ th("Driver") }}{{ th("Course") }}{{ th("Status") }}{{ th("Completed", "hidden sm:table-cell") }}{{ th("Expires") }}</tr>
       </thead>
-      <tbody class="divide-y divide-slate-100">
+      <tbody class="divide-y divide-line/70">
         {% for c in certs %}
           <tr>
             <th scope="row" class="px-4 py-2 text-left font-normal">{{ record_link(c.driver) }}</th>
@@ -68,7 +68,7 @@
             <td class="px-4 py-2 tabular-nums">{{ c.training.expires_on|shortdate }}</td>
           </tr>
         {% else %}
-          <tr><td colspan="5" class="px-4 py-8 text-center text-slate-600">No certifications match.</td></tr>
+          <tr><td colspan="5" class="px-4 py-8 text-center text-muted">No certifications match.</td></tr>
         {% endfor %}
       </tbody>
     </table>

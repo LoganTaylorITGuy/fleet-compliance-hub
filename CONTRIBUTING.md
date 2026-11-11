@@ -28,6 +28,10 @@
 - **No secrets in the repo.** Configuration comes from environment variables;
   see `.env.example`.
 - **Mock data only.** Names, DOT/MC numbers, CDL numbers and VINs are fictional.
+- **Colors come from design tokens** (`text-ink`, `text-muted`, `bg-danger-soft`,
+  `glass`...) defined in `app/static/css/input.css`, never raw palette classes
+  like `text-slate-600`, so every page works in light and dark.
+  `tests/test_design_tokens.py` fails if a token pair drops below WCAG AA.
 - **Accessibility:** WCAG 2.1 AA. Status is never shown by color alone; tables use
   `<th scope>`; every form control has a label.
 
