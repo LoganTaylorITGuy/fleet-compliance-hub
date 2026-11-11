@@ -12,6 +12,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  PYTHON_VERSION: "3.12"
+
 jobs:
   lint:
     name: lint
@@ -20,11 +23,11 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install "ruff>=0.8"
       - name: Ruff lint
-        run: ruff check .
+        run: ruff check --output-format=github .
       - name: Ruff format
         run: ruff format --check .
 
@@ -35,11 +38,79 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -e ".[dev]"
       - name: Tests with coverage
-        run: pytest --cov-report=xml
+        run: pytest --cov-report=xml --cov-report=markdown:coverage.md --junitxml=junit.xml
+      - name: Publish summary
+        if: always()
+        run: |
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import xml.etree.ElementTree as ET
+          s = ET.parse("junit.xml").getroot()
+          s = s if s.tag == "testsuite" else s.find("testsuite")
+          total, fail, err, skip = (int(s.get(k, 0)) for k in ("tests", "failures", "errors", "skipped"))
+          print(f"### Tests: {total - fail - err - skip} passed, {fail + err} failed, {skip} skipped\n")
+          EOF
+          echo "### Coverage" >> "$GITHUB_STEP_SUMMARY"
+          cat coverage.md >> "$GITHUB_STEP_SUMMARY" || true
+
+  tenant-isolation:
+    name: tenant-isolation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Tenant isolation tests
+        run: pytest -m isolation --no-cov -v
+
+  migrations:
+    name: migrations
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fleet
+          POSTGRES_PASSWORD: fleet-ci-only
+          POSTGRES_DB: fleet_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fleet" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      FLASK_APP: app:create_app
+      APP_ENV: ci
+      SECRET_KEY: ci-only-not-secret
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [sqlite, postgresql]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Choose database
+        run: |
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            echo "DATABASE_URL=postgresql://fleet:fleet-ci-only@localhost:5432/fleet_ci" >> "$GITHUB_ENV"
+          else
+            echo "DATABASE_URL=sqlite:///${{ runner.temp }}/ci.db" >> "$GITHUB_ENV"
+          fi
+      - name: Upgrade a fresh database
+        run: flask db upgrade
+      - name: Models match migrations
+        run: flask db check
+      - name: Downgrade and upgrade again
+        run: flask db downgrade base && flask db upgrade
 
   audit:
     name: audit
@@ -48,7 +119,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -e ".[dev]"
       - name: Dependency vulnerability scan
