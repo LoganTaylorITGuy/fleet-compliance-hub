@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% from "partials/macros.html" import status_badge, record_link, filter_bar, th with context %}
+{% from "partials/macros.html" import status_badge, record_link, filter_bar, th, export_button with context %}
 {% set page_title = "Drivers" %}
 {% block content %}
-<h1 class="text-2xl font-bold">Drivers</h1>
+<div class="flex flex-wrap items-center justify-between gap-3"><h1 class="text-2xl font-bold">Drivers</h1>{{ export_button("drivers") }}</div>
 <p class="mt-1 text-sm text-slate-600">{{ rows|length }} shown. Search by name or CDL number.</p>
 {{ filter_bar("drivers.index", term, level_choices, search_label="Name or CDL number") }}
 <div class="mt-4 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">

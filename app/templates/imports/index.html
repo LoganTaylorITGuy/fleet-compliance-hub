@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import th with context %}
+{% set page_title = "Import" %}
+{% block content %}
+<h1 class="text-2xl font-bold">Import spreadsheets</h1>
+<p class="mt-1 max-w-prose text-sm text-slate-600">Bring in the Excel or CSV files you already keep. You'll preview the file, match its columns, and fix or skip bad rows before anything is saved.</p>
+
+{% if can_edit("imports") %}
+<form method="post" action="{{ url_for('imports.upload') }}" enctype="multipart/form-data" class="mt-6 grid gap-4 rounded-lg bg-white p-4 ring-1 ring-slate-200 md:grid-cols-4 md:items-end">
+  {{ form.csrf_token }}
+  <div>
+    <label for="data_type" class="block text-xs font-medium text-slate-700">What's in the file?</label>
+    <select id="data_type" name="data_type" required class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm">
+      {% for key, spec in specs.items() %}<option value="{{ key }}">{{ spec.label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="md:col-span-2">
+    <label for="file" class="block text-xs font-medium text-slate-700">Spreadsheet (.xlsx or .csv, up to 5 MB)</label>
+    <input id="file" name="file" type="file" required accept=".xlsx,.csv" class="mt-1 block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-medium">
+  </div>
+  <div>
+    <label for="template_id" class="block text-xs font-medium text-slate-700">Saved column mapping</label>
+    <select id="template_id" name="template_id" class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm">
+      <option value="">Suggest from headers</option>
+      {% for t in templates %}<option value="{{ t.id }}">{{ specs[t.data_type].label }}: {{ t.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 md:col-start-4">Upload and preview</button>
+</form>
+{% endif %}
+
+<section aria-labelledby="history-h" class="mt-8">
+  <h2 id="history-h" class="text-lg font-semibold">Import history</h2>
+  <div class="mt-2 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+        <tr>{{ th("When") }}{{ th("Who") }}{{ th("File") }}{{ th("Type") }}{{ th("Added") }}{{ th("Updated") }}{{ th("Skipped") }}{{ th('<span class="sr-only">Undo</span>'|safe) }}</tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for run in runs %}
+          <tr class="{{ 'text-slate-500' if run.undone_at else '' }}">
+            <td class="whitespace-nowrap px-4 py-2 tabular-nums">{{ run.created_at|localtime }}</td>
+            <td class="px-4 py-2">{{ run.user.name if run.user else "" }}</td>
+            <td class="px-4 py-2 break-all">{{ run.file_name }}</td>
+            <td class="px-4 py-2">{{ specs[run.data_type].label if run.data_type in specs else run.data_type }}</td>
+            <td class="px-4 py-2 tabular-nums">{{ run.rows_added }}</td>
+            <td class="px-4 py-2 tabular-nums">{{ run.rows_updated }}</td>
+            <td class="px-4 py-2 tabular-nums">{{ run.rows_skipped }}</td>
+            <td class="px-4 py-2 text-right">
+              {% if run.undone_at %}<span class="text-xs">Undone {{ run.undone_at|localtime }}</span>
+              {% elif run.id == latest_id and can_edit("imports") %}
+                <form method="post" action="{{ url_for('imports.undo', run_id=run.id) }}">
+                  {{ action_form.csrf_token }}
+                  <button type="submit" data-confirm="Undo this import? Added rows are removed and updated rows go back to their old values." class="rounded border border-slate-300 px-2 py-1 text-xs font-semibold hover:bg-slate-100">Undo</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" class="px-4 py-6 text-center text-slate-600">No imports yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if templates %}
+<section aria-labelledby="templates-h" class="mt-8">
+  <h2 id="templates-h" class="text-lg font-semibold">Saved column mappings</h2>
+  <ul class="mt-2 divide-y divide-slate-100 rounded-lg bg-white ring-1 ring-slate-200">
+    {% for t in templates %}
+      <li class="flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm">
+        <span><span class="font-medium">{{ t.name }}</span> <span class="text-slate-600">· {{ specs[t.data_type].label }} · {{ t.column_mapping.values()|select|list|length }} columns mapped</span></span>
+        {% if can_edit("imports") %}
+          <form method="post" action="{{ url_for('imports.delete_template', template_id=t.id) }}">
+            {{ action_form.csrf_token }}
+            <button type="submit" data-confirm="Delete this saved mapping?" class="text-xs text-red-800 underline">Delete<span class="sr-only"> {{ t.name }}</span></button>
+          </form>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

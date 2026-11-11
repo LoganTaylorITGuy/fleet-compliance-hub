@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% from "partials/macros.html" import status_badge, record_link, th with context %}
+{% from "partials/macros.html" import status_badge, record_link, th, export_button with context %}
 {% set page_title = "Training" %}
 {% block content %}
-<h1 class="text-2xl font-bold">Training</h1>
+<div class="flex flex-wrap items-center justify-between gap-3"><h1 class="text-2xl font-bold">Training</h1>{{ export_button("training") }}</div>
 <p class="mt-1 text-sm text-slate-600">Academy students' progress and every driver's certifications.</p>
 
 {% if students %}

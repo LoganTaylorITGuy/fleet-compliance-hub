@@ -83,3 +83,9 @@
 {%- endmacro %}
 
 {% macro th(text, extra="") -%}<th scope="col" class="px-4 py-2 {{ extra }}">{{ text }}</th>{%- endmacro %}
+
+{% macro export_button(dataset) -%}
+  <a href="{{ url_for('exports.download', dataset=dataset) }}" class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-50" download>
+    <span aria-hidden="true">⤓</span> Export to Excel
+  </a>
+{%- endmacro %}
