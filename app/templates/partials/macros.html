@@ -48,3 +48,38 @@
     {% if note %}<p class="mt-2 text-xs text-slate-600">{{ note }}</p>{% endif %}
   </div>
 {%- endmacro %}
+
+{% macro filter_bar(endpoint, term, level_choices, extra=None, search_label="Search") -%}
+  <form method="get" action="{{ url_for(endpoint) }}" class="mt-6 flex flex-wrap items-end gap-3 rounded-lg bg-white p-4 ring-1 ring-slate-200" data-autosubmit role="search">
+    <div class="min-w-0 flex-1 basis-56">
+      <label for="f-q" class="block text-xs font-medium text-slate-700">{{ search_label }}</label>
+      <input id="f-q" name="q" type="search" value="{{ term }}" class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm">
+    </div>
+    <div>
+      <label for="f-status" class="block text-xs font-medium text-slate-700">Status</label>
+      <select id="f-status" name="status" class="mt-1 rounded border border-slate-300 px-2 py-1.5 text-sm">
+        {% for value, text in level_choices %}<option value="{{ value }}" {% if request.args.get('status', '') == value %}selected{% endif %}>{{ text }}</option>{% endfor %}
+      </select>
+    </div>
+    {% if extra %}{{ extra }}{% endif %}
+    <button type="submit" class="rounded-md bg-blue-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-800">Search</button>
+  </form>
+{%- endmacro %}
+
+{% macro fact(label, value) -%}
+  <div class="min-w-0"><dt class="text-xs font-medium uppercase tracking-wide text-slate-600">{{ label }}</dt><dd class="mt-0.5 break-words text-sm">{{ value if value not in (none, "") else "—" }}</dd></div>
+{%- endmacro %}
+
+{% macro findings_panel(status) -%}
+  {% if status.findings %}
+    <ul class="mt-4 space-y-2">
+      {% for f in status.sorted_findings() %}
+        <li class="flex flex-wrap items-center gap-2 text-sm">{{ status_badge(f.level) }} <span class="font-medium">{{ f.label }}:</span> {{ f.message }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="mt-4 text-sm text-slate-700">Everything is current.</p>
+  {% endif %}
+{%- endmacro %}
+
+{% macro th(text, extra="") -%}<th scope="col" class="px-4 py-2 {{ extra }}">{{ text }}</th>{%- endmacro %}

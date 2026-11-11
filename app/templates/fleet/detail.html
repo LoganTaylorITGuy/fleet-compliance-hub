@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import status_badge, fact, findings_panel, th with context %}
+{% set page_title = "Unit " ~ vehicle.unit_number %}
+{% block content %}
+<p class="text-sm"><a href="{{ url_for('fleet.index') }}" class="text-blue-700 underline">← All units</a></p>
+<div class="mt-2 flex flex-wrap items-center gap-3">
+  <h1 class="text-2xl font-bold">Unit {{ vehicle.unit_number }}</h1>
+  {{ status_badge(status.level, size="md") }}
+  <span class="text-sm text-slate-600">{{ vehicle.vehicle_type|label }} · {{ vehicle.year or "" }} {{ vehicle.make or "" }}</span>
+</div>
+
+<section aria-labelledby="facts-h" class="mt-6 rounded-lg bg-white p-4 ring-1 ring-slate-200">
+  <h2 id="facts-h" class="text-base font-semibold">Compliance summary</h2>
+  <dl class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
+    <div class="col-span-2 min-w-0 sm:col-span-1 lg:col-span-2"><dt class="text-xs font-medium uppercase tracking-wide text-slate-600">VIN</dt><dd class="mt-0.5 break-all font-mono text-sm">{{ vehicle.vin or "—" }}</dd></div>
+    {{ fact("Plate", (vehicle.plate or "") ~ " " ~ (vehicle.plate_state or "")) }}
+    {{ fact("Registration expires", vehicle.registration_expiration|shortdate) }}
+    {{ fact("Last annual inspection", vehicle.annual_inspection_on|shortdate) }}
+    {{ fact("Next inspection due", inspection_due|shortdate) }}
+    {{ fact("Next PM due", pm_due|shortdate) }}
+  </dl>
+  {{ findings_panel(status) }}
+</section>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-2">
+  <section aria-labelledby="dvir-h">
+    <h2 id="dvir-h" class="text-lg font-semibold">Driver vehicle inspection reports</h2>
+    <p class="text-xs text-slate-600">Synced from Motive (mock)</p>
+    <ul class="mt-2 divide-y divide-slate-100 rounded-lg bg-white ring-1 ring-slate-200">
+      {% for d in dvirs %}
+        <li class="px-4 py-3 text-sm {{ 'bg-red-50' if d.defect_found and not d.defect_resolved else '' }}">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <span class="font-medium tabular-nums">{{ d.inspected_on|shortdate }}{% if d.driver %} · {{ d.driver.full_name }}{% endif %}</span>
+            {% if not d.defect_found %}<span class="text-emerald-800"><span aria-hidden="true">✓ </span>No defects</span>
+            {% elif d.defect_resolved %}<span class="text-slate-700">Defect resolved {{ d.resolved_on|shortdate }}</span>
+            {% else %}<span class="font-semibold text-red-800"><span aria-hidden="true">● </span>Open defect</span>{% endif %}
+          </div>
+          {% if d.defects %}<p class="mt-1 text-slate-700">{{ d.defects }}</p>{% endif %}
+          {% for r in d.repairs %}<p class="mt-1 text-xs text-slate-600">Repair: {{ r.work_done }} ({{ r.status|label }}, {{ r.shop_name or r.shop_type|label }})</p>{% endfor %}
+        </li>
+      {% else %}<li class="px-4 py-4 text-sm text-slate-600">No inspection reports.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section aria-labelledby="maint-h">
+    <h2 id="maint-h" class="text-lg font-semibold">Maintenance history</h2>
+    <ul class="mt-2 divide-y divide-slate-100 rounded-lg bg-white ring-1 ring-slate-200">
+      {% for m in maintenance %}
+        <li class="px-4 py-3 text-sm {{ 'bg-blue-50' if m.status == 'open' else '' }}">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <span class="font-medium">{{ m.work_done }}</span>
+            <span class="tabular-nums text-slate-700">{{ m.performed_on|shortdate }}</span>
+          </div>
+          <p class="mt-0.5 text-xs text-slate-600">
+            {{ m.shop_name or (m.shop_type|label) }}
+            {% if m.next_due_on %} · next due {{ m.next_due_on|shortdate }}{% endif %}
+            {% if m.dvir_id %} · from DVIR {{ m.dvir.inspected_on|shortdate }}{% endif %}
+          </p>
+          {% if m.status == "open" %}
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+              <span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs font-semibold text-blue-900">In shop now</span>
+              {% if action_form %}
+                <form method="post" action="{{ url_for('fleet.complete_repair', record_id=m.id) }}">
+                  {{ action_form.csrf_token }}
+                  <button type="submit" class="rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-800">Mark repair complete</button>
+                </form>
+              {% endif %}
+            </div>
+          {% endif %}
+        </li>
+      {% else %}<li class="px-4 py-4 text-sm text-slate-600">No maintenance on file.</li>{% endfor %}
+    </ul>
+
+    {% if form %}
+      <details class="mt-4 rounded-lg bg-white p-4 ring-1 ring-slate-200">
+        <summary class="cursor-pointer text-sm font-semibold text-blue-800">Add maintenance record</summary>
+        <form method="post" action="{{ url_for('fleet.add_maintenance', vehicle_id=vehicle.id) }}" class="mt-3 grid gap-3 sm:grid-cols-2">
+          {{ form.csrf_token }}
+          {% for field in (form.performed_on, form.work_done, form.shop_type, form.shop_name, form.next_due_on, form.next_due_miles) %}
+            <div class="{{ 'sm:col-span-2' if field.name == 'work_done' else '' }}">
+              {{ field.label(class="block text-xs font-medium text-slate-700") }}
+              {{ field(class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm") }}
+            </div>
+          {% endfor %}
+          <button type="submit" class="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800 sm:col-span-2">Add record</button>
+        </form>
+      </details>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

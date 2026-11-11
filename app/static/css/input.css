@@ -7,3 +7,14 @@
   outline: 2px solid #1d4ed8;
   outline-offset: 2px;
 }
+
+/* Course progress bar widths (CSP forbids inline style attributes). */
+.progress-0 { width: 0%; }
+.progress-1 { width: 25%; }
+.progress-2 { width: 50%; }
+.progress-3 { width: 75%; }
+.progress-4 { width: 100%; }
+
+/* Scrolling table wrappers must contain absolutely positioned screen-reader
+   text, or it escapes and makes the whole page scroll sideways on phones. */
+.overflow-x-auto { position: relative; }

@@ -37,6 +37,17 @@ All notable changes to this project are documented here. The format follows
   one-click Open) and carrier dashboard (driver and unit counts, Needs action
   now, Expiring in 30 days, per-driver and per-unit status). Status badges use
   text and shapes, not color alone; layouts adapt to phone width.
+- Drivers (search, status filter, detail with qualification file checklist,
+  tests, training, last 7 days of hours, audited edits), Fleet (type and status
+  filters, unit detail with DVIRs and maintenance, add maintenance, complete a
+  shop repair, which resolves its DVIR defect), Hours of Service (7-day grid with
+  violations highlighted, labeled as synced from Motive (mock)) and Training
+  (academy student progress, mark course complete, certification expirations).
+
+### Fixed
+
+- Screen-reader-only text inside scrolling tables made whole pages scroll
+  sideways on phones.
 
 ### Changed
 

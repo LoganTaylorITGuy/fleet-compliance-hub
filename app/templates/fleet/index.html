@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import status_badge, record_link, filter_bar, th with context %}
+{% set page_title = "Fleet" %}
+{% block content %}
+<h1 class="text-2xl font-bold">Fleet</h1>
+<p class="mt-1 text-sm text-slate-600">{{ rows|length }} tractors and trailers shown.</p>
+{% set type_select %}
+  <div>
+    <label for="f-type" class="block text-xs font-medium text-slate-700">Type</label>
+    <select id="f-type" name="type" class="mt-1 rounded border border-slate-300 px-2 py-1.5 text-sm">
+      <option value="">Tractors and trailers</option>
+      <option value="tractor" {% if vtype == 'tractor' %}selected{% endif %}>Tractors</option>
+      <option value="trailer" {% if vtype == 'trailer' %}selected{% endif %}>Trailers</option>
+    </select>
+  </div>
+{% endset %}
+{{ filter_bar("fleet.index", term, level_choices, extra=type_select, search_label="Unit, VIN, plate or make") }}
+<div class="mt-4 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
+  <table class="min-w-full divide-y divide-slate-200 text-sm">
+    <caption class="sr-only">Tractors and trailers, most urgent first</caption>
+    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+      <tr>{{ th("Unit") }}{{ th("Status") }}{{ th("Registration", "hidden md:table-cell") }}{{ th("Annual inspection due", "hidden md:table-cell") }}{{ th("Next PM due", "hidden md:table-cell") }}{{ th("Top issue", "hidden lg:table-cell") }}</tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for row in rows %}
+        {% set v = row.vehicle %}{% set top = row.status.sorted_findings()|first %}
+        <tr>
+          <th scope="row" class="px-4 py-2 text-left font-normal">
+            <span class="whitespace-nowrap">{{ record_link(v) }}</span> <span class="text-xs text-slate-600">{{ v.vehicle_type|label }} · {{ v.year or "" }} {{ v.make or "" }}</span>
+            {% if row.in_shop %}<span class="ml-1 rounded bg-blue-100 px-1.5 py-0.5 text-xs font-semibold text-blue-900">In shop</span>{% endif %}
+            {% if top %}<span class="mt-0.5 block text-xs text-slate-600 lg:hidden">{{ top.label }}: {{ top.message }}</span>{% endif %}
+          </th>
+          <td class="px-4 py-2">{{ status_badge(row.status.level) }}</td>
+          <td class="hidden px-4 py-2 tabular-nums md:table-cell">{{ v.registration_expiration|shortdate }}</td>
+          <td class="hidden px-4 py-2 tabular-nums md:table-cell">{{ row.inspection_due|shortdate }}</td>
+          <td class="hidden px-4 py-2 tabular-nums md:table-cell">{{ row.pm_due|shortdate }}</td>
+          <td class="hidden px-4 py-2 text-slate-700 lg:table-cell">{% if top %}{{ top.label }}: {{ top.message }}{% endif %}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="px-4 py-8 text-center text-slate-600">No units match.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
