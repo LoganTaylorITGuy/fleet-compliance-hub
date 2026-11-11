@@ -64,6 +64,12 @@ class Config:
     UPLOAD_FOLDER = env_str("UPLOAD_FOLDER", str(BASE_DIR / "instance" / "uploads"))
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB spreadsheet limit
 
+    # Behind a reverse proxy or tunnel (Cloudflare, a load balancer), trust its
+    # X-Forwarded-* headers so the app knows the original request was HTTPS.
+    # Only enable when a proxy is actually in front: otherwise clients could
+    # spoof those headers.
+    TRUST_PROXY = env_bool("TRUST_PROXY", default=False)
+
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", default=False)

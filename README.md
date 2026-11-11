@@ -118,6 +118,26 @@ type them instead, every account uses the password **`fleet-demo-2026`** (set
 These are demo credentials for fictional data. `DEMO_MODE` must never be on in
 production, and the app refuses to start if it is.
 
+### Share a live demo (HTTPS link and QR code)
+
+For a demo on someone else's phone, without fighting guest Wi-Fi:
+
+```bash
+scripts/demo-tunnel.sh --reset
+```
+
+This serves the app with [waitress](https://docs.pylonsproject.org/projects/waitress/)
+on `127.0.0.1` only, opens a free
+[Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/)
+(no account needed; requires `cloudflared`), and prints a public
+`https://….trycloudflare.com` link plus a QR code (if `qrencode` is installed).
+Secure cookies and proxy headers are turned on for that run only.
+
+The link is public while the script runs, and demo mode's one-click logins are
+on. The data is fictional, but run it only for the length of a demo. **Ctrl+C**
+closes the tunnel. If the script is killed any other way, a watchdog closes the
+tunnel within seconds, so the link never outlives the script.
+
 ### A 10-minute walkthrough
 
 1. **Provider Admin:** carrier clients ranked by urgency.

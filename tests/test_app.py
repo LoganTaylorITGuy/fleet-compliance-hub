@@ -78,3 +78,39 @@ def test_favicon_is_public(client):
     response = client.get("/favicon.ico")
     assert response.status_code == 301
     assert response.headers["Location"].endswith("/static/favicon.svg")
+
+
+def _scheme_seen(app, headers):
+    """Request the public /healthz page and report the scheme Flask saw."""
+    from flask import request
+
+    seen = []
+    app.before_request(lambda: seen.append(request.scheme))
+    app.test_client().get("/healthz", headers=headers)
+    return seen[0]
+
+
+def test_trust_proxy_honors_forwarded_https():
+    """Behind the Cloudflare tunnel, the app must see requests as HTTPS."""
+    app = create_app(TestConfig, TRUST_PROXY=True)
+    assert _scheme_seen(app, {"X-Forwarded-Proto": "https"}) == "https"
+
+
+def test_forwarded_headers_ignored_without_trust_proxy():
+    """Without a proxy in front, clients must not be able to fake HTTPS."""
+    app = create_app(TestConfig)
+    assert _scheme_seen(app, {"X-Forwarded-Proto": "https"}) == "http"
+
+
+def test_demo_tunnel_script_is_valid_bash():
+    import subprocess
+    from pathlib import Path
+
+    script = Path(__file__).resolve().parent.parent / "scripts" / "demo-tunnel.sh"
+    # Fixed path to our own script, syntax check only (bash -n runs nothing).
+    result = subprocess.run(["bash", "-n", str(script)], check=False)  # noqa: S603, S607
+    assert result.returncode == 0
+    text = script.read_text()
+    assert '--listen="127.0.0.1:$PORT"' in text  # never bound to the LAN
+    assert "trap cleanup EXIT INT TERM HUP" in text
+    assert "start_watchdog" in text
