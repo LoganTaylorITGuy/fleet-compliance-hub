@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% set page_title = "Error " ~ code %}
+{% block content %}
+  <div class="mx-auto max-w-lg py-16 text-center">
+    <p class="text-sm font-semibold text-slate-500">Error {{ code }}</p>
+    <h1 class="mt-2 text-2xl font-bold">{{ message }}</h1>
+    <p class="mt-6"><a class="font-medium text-blue-700 underline hover:text-blue-900" href="{{ url_for('main.index') }}">Back to the dashboard</a></p>
+  </div>
+{% endblock %}

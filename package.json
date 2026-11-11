@@ -1,0 +1,12 @@
+{
+  "name": "fleet-compliance-hub-css",
+  "private": true,
+  "description": "Only used to rebuild app/static/css/app.css. The app itself needs no Node.",
+  "scripts": {
+    "build:css": "tailwindcss -i app/static/css/input.css -o app/static/css/app.css --minify",
+    "watch:css": "tailwindcss -i app/static/css/input.css -o app/static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
