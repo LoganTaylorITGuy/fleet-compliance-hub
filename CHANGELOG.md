@@ -29,3 +29,12 @@ All notable changes to this project are documented here. The format follows
   an academy fleet with students, 30 days of HOS logs, DVIRs, maintenance, tests
   and training, users for every role, and planted records for each demo step.
   Deterministic, dated relative to today, refuses to run in production.
+- Compliance status rules (`app/compliance/`): red for anything expired, a failed
+  test, an unresolved DVIR defect or an HOS violation in the last 7 days; yellow
+  for anything due within 30 days; green otherwise. Thresholds live in
+  `app/compliance/thresholds.py`. Unit tests cover every rule and boundary.
+
+### Changed
+
+- Seed data assigns red/yellow quotas per tenant instead of random dates per
+  item, which had compounded into a mostly red fleet.

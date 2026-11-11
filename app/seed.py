@@ -114,14 +114,9 @@ class Seeder:
     def days(self, n: int) -> date:
         return self.today + timedelta(days=n)
 
-    def expiry(self, *, red: float = 0.08, yellow: float = 0.12, far: tuple = (45, 700)) -> date:
-        """A future-ish expiration date: mostly current, some due soon, a few lapsed."""
-        roll = self.rng.random()
-        if roll < red:
-            return self.days(-self.rng.randint(3, 40))
-        if roll < red + yellow:
-            return self.days(self.rng.randint(4, 29))
-        return self.days(self.rng.randint(*far))
+    def current(self, low: int = 45, high: int = 700) -> date:
+        """A date comfortably in the future. apply_status_mix() adds the problems."""
+        return self.days(self.rng.randint(low, high))
 
     def cdl_number(self) -> str:
         while True:
@@ -158,6 +153,7 @@ class Seeder:
             tenants[plan.key] = tenant
             drivers = self.build_drivers(tenant, plan)
             vehicles = self.build_fleet(tenant, plan)
+            self.apply_status_mix(drivers, vehicles)
             self.build_hos(tenant, [d for d in drivers if not d.is_student])
             self.build_dvirs(tenant, vehicles, [d for d in drivers if not d.is_student])
             db.session.add(IntegrationConnection(tenant_id=tenant.id, service="motive"))
@@ -180,8 +176,8 @@ class Seeder:
                 cdl_number=self.cdl_number(),
                 cdl_state="TX",
                 cdl_class="A" if self.rng.random() < 0.85 or is_student else "B",
-                cdl_expiration=self.expiry(red=0.03, yellow=0.06, far=(60, 1800)),
-                medical_card_expiration=self.expiry(),
+                cdl_expiration=self.current(60, 1800),
+                medical_card_expiration=self.current(),
                 hire_date=hire,
                 status=DriverStatus.ACTIVE,
                 is_student=is_student,
@@ -208,8 +204,8 @@ class Seeder:
         ]
         if not driver.is_student:
             # Annual items: completed within the last year, so the next one is due later.
-            mvr_done = self.days(-self.rng.randint(20, 380))
-            review_done = self.days(-self.rng.randint(20, 375))
+            mvr_done = self.days(-self.rng.randint(20, 300))
+            review_done = self.days(-self.rng.randint(20, 300))
             items += [
                 (FileItemType.MVR, mvr_done, mvr_done + timedelta(days=365)),
                 (FileItemType.ANNUAL_REVIEW, review_done, review_done + timedelta(days=365)),
@@ -266,7 +262,7 @@ class Seeder:
                 )
             return
         for course, category, valid_days in self.rng.sample(SAFETY_COURSES, k=2):
-            expires = self.expiry(red=0.05, yellow=0.12, far=(60, valid_days - 30))
+            expires = self.current(60, valid_days - 30)
             db.session.add(
                 TrainingRecord(
                     tenant_id=tenant.id,
@@ -294,9 +290,7 @@ class Seeder:
             (VehicleType.TRAILER, plan.trailers, 501),
         ):
             for n in range(count):
-                last_inspection = self.days(-self.rng.randint(20, 330))
-                if self.rng.random() < 0.10:
-                    last_inspection = self.days(-self.rng.randint(338, 362))  # due soon
+                last_inspection = self.days(-self.rng.randint(20, 300))
                 vehicle = Vehicle(
                     tenant_id=tenant.id,
                     unit_number=f"{'T' if vtype == VehicleType.TRACTOR else 'TR'}{start + n}",
@@ -306,7 +300,7 @@ class Seeder:
                     vin=self.vin(),
                     plate=self.fake.bothify("??#-####").upper(),
                     plate_state="TX",
-                    registration_expiration=self.expiry(red=0.04, yellow=0.10, far=(40, 360)),
+                    registration_expiration=self.current(40, 360),
                     annual_inspection_on=last_inspection,
                     odometer=self.rng.randint(40_000, 900_000)
                     if vtype == VehicleType.TRACTOR
@@ -361,9 +355,55 @@ class Seeder:
                 shop_type=ShopType.IN_HOUSE,
                 shop_name=TRAILER_SHOP if is_trailer else "Panhandle Diesel Service",
                 status=RepairStatus.COMPLETED,
-                next_due_on=self.expiry(red=0.04, yellow=0.15, far=(35, 120)),
+                next_due_on=self.current(35, 120),
             )
         )
+
+    def apply_status_mix(self, drivers: list[Driver], vehicles: list[Vehicle]) -> None:
+        """Give each tenant a realistic mix: a few reds, several yellows, mostly green.
+
+        Each working driver and unit in the tenant goes into one pool. About 10%
+        (at least one) get a lapsed item, about 18% (at least one) get an item due
+        soon, and the rest stay fully current. Fixed quotas instead of independent
+        random dates, which compound into a mostly red fleet. Students stay green.
+        """
+        db.session.flush()
+        pool: list[Driver | Vehicle] = [d for d in drivers if not d.is_student] + vehicles
+        self.rng.shuffle(pool)
+        reds = max(1, round(len(pool) * 0.10))
+        yellows = max(1, round(len(pool) * 0.18))
+        for index, item in enumerate(pool[: reds + yellows]):
+            target = (
+                self.days(-self.rng.randint(3, 40))
+                if index < reds
+                else self.days(self.rng.randint(4, 29))
+            )
+            if isinstance(item, Driver):
+                self._set_driver_date(item, target)
+            else:
+                self._set_vehicle_date(item, target)
+
+    def _set_driver_date(self, driver: Driver, target: date) -> None:
+        match self.rng.choice(["medical", "medical", "cdl", "training", "mvr"]):
+            case "medical":
+                driver.medical_card_expiration = target
+            case "cdl":
+                driver.cdl_expiration = target
+            case "training":
+                driver.trainings[0].expires_on = target
+            case "mvr":
+                mvr = next(i for i in driver.file_items if i.item_type == FileItemType.MVR)
+                mvr.due_on = target
+
+    def _set_vehicle_date(self, vehicle: Vehicle, target: date) -> None:
+        match self.rng.choice(["registration", "inspection", "maintenance"]):
+            case "registration":
+                vehicle.registration_expiration = target
+            case "inspection":
+                vehicle.annual_inspection_on = target - timedelta(days=365)
+            case "maintenance":
+                pm = next(r for r in vehicle.maintenance if r.next_due_on)
+                pm.next_due_on = target
 
     def build_hos(self, tenant: Tenant, drivers: list[Driver]) -> None:
         """30 days of daily logs per driver, as the Motive sync would deliver them."""
