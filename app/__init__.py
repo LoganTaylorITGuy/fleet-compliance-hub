@@ -39,6 +39,11 @@ def create_app(config_object: type[Config] | None = None, **overrides) -> Flask:
     login_manager.init_app(app)
     csrf.init_app(app)
 
+    if app.config["TRUST_PROXY"]:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
     _register_blueprints(app)
     _register_template_globals(app)
     _register_error_handlers(app)

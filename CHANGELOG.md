@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/demo-tunnel.sh`: share a live demo over HTTPS with a Cloudflare
+  quick tunnel, served by waitress on 127.0.0.1, with a QR code. A watchdog
+  closes the tunnel if the script dies, even from `kill -9`.
+- `TRUST_PROXY` setting to honor X-Forwarded-* headers behind a proxy or tunnel
+  (off by default, so clients can't spoof HTTPS).
+
 ## [0.1.0] - 2026-11-11
 
 First proof-of-concept release.
