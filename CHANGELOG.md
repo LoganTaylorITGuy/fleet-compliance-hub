@@ -51,6 +51,12 @@ All notable changes to this project are documented here. The format follows
 - Export to Excel on Drivers, Fleet, Hours of Service, Training and Audit log,
   with spreadsheet formula injection escaped.
 - Messy sample spreadsheets in `samples/` and a script to regenerate them.
+- Motive ELD stub (`app/integrations/motive.py`): `get_drivers`, `get_vehicles`,
+  `get_hos_logs`, `get_dvirs` return REST-shaped mock data in demo mode; live
+  calls are not implemented and endpoints are marked TODO pending Motive's docs.
+- Integrations page with "Connected (demo mode)" and Sync now: an incremental,
+  idempotent sync of today's hours, recent DVIRs and odometers that never
+  rewrites past days.
 
 ### Fixed
 
