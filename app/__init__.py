@@ -27,7 +27,15 @@ def create_app(config_object: type[Config] | None = None, **overrides) -> Flask:
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
     db.init_app(app)
-    migrate.init_app(app, db, directory=str(Path(__file__).resolve().parent.parent / "migrations"))
+    from . import models  # noqa: F401  (register tables with SQLAlchemy metadata)
+
+    migrate.init_app(
+        app,
+        db,
+        directory=str(Path(__file__).resolve().parent.parent / "migrations"),
+        render_as_batch=True,  # lets Alembic alter tables on SQLite
+        compare_type=True,
+    )
     csrf.init_app(app)
 
     _register_blueprints(app)

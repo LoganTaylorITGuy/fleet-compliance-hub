@@ -53,6 +53,7 @@ ignore = ["S101"]  # assert is fine in tests
 testpaths = ["tests"]
 addopts = "-q --cov=app --cov-report=term-missing"
 filterwarnings = ["error::DeprecationWarning:app.*"]
+markers = ["isolation: tenant isolation tests (run as their own CI job)"]
 
 [tool.coverage.report]
 fail_under = 80
