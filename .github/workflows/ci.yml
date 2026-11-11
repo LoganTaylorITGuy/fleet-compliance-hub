@@ -109,6 +109,8 @@ jobs:
         run: flask db upgrade
       - name: Models match migrations
         run: flask db check
+      - name: Seed demo data on the fresh database
+        run: python seed.py
       - name: Downgrade and upgrade again
         run: flask db downgrade base && flask db upgrade
 

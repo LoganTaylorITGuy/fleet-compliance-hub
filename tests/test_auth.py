@@ -71,10 +71,12 @@ def test_safe_next_url(target, expected):
     assert safe_next_url(target) == expected
 
 
-def test_demo_switcher_shown_and_works_in_demo_mode(client, world):
+def test_demo_switcher_shown_and_works_in_demo_mode(client, world, monkeypatch):
     from app.auth import services
 
-    services.DEMO_PERSONAS["carrier_viewer"] = ("viewer@test.example", "Viewer", "")
+    monkeypatch.setitem(
+        services.DEMO_PERSONAS, "carrier_viewer", ("viewer@test.example", "Viewer", "")
+    )
     html = client.get("/login").get_data(as_text=True)
     assert "Demo logins" in html
     response = client.post("/login/demo", data={"persona": "carrier_viewer"})
