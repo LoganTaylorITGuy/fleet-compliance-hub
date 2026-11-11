@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fleet-compliance-hub"
+version = "0.1.0"
+description = "Multi-tenant fleet compliance portal (proof of concept)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Logan D Taylor" }]
+requires-python = ">=3.12"
+dependencies = [
+    "Flask>=3.1",
+    "Flask-SQLAlchemy>=3.1",
+    "Flask-Migrate>=4.0",
+    "Flask-Login>=0.6.3",
+    "Flask-WTF>=1.2",
+    "SQLAlchemy>=2.0.30",
+    "python-dotenv>=1.0",
+    "pandas>=2.2",
+    "openpyxl>=3.1",
+    "Faker>=30",
+    "psycopg[binary]>=3.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "ruff>=0.8",
+    "pip-audit>=2.7",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+ignore = ["S101"]  # assert is fine in tests
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106"]  # demo passwords in tests
+"seed.py" = ["S311"]           # random is fine for fake data
+"app/integrations/**" = ["S311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --cov=app --cov-report=term-missing"
+filterwarnings = ["error::DeprecationWarning:app.*"]
+
+[tool.coverage.report]
+fail_under = 80
+skip_empty = true
