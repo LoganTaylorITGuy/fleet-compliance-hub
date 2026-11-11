@@ -26,7 +26,7 @@
         <a href="{{ url_for('main.index') }}" class="block text-lg font-semibold leading-tight text-white">Fleet Compliance Hub</a>
         <p class="mt-1 text-xs text-slate-300">{{ provider_name }}</p>
       </div>
-      {% block tenant_switcher %}{% endblock %}
+      {% include "partials/sidebar_context.html" %}
       <ul class="space-y-1 px-3 pb-6 pt-2 md:pt-0">
         {% for item in nav_items() %}
           {% set active = request.endpoint and request.endpoint.split('.')[0] == item.endpoint.split('.')[0] %}
@@ -37,7 +37,7 @@
           </li>
         {% endfor %}
       </ul>
-      {% block user_menu %}{% endblock %}
+      {% include "partials/user_menu.html" %}
     </nav>
     {% endblock %}
 

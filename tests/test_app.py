@@ -18,7 +18,7 @@ def test_healthz(client):
 
 
 def test_layout_has_disclaimer_and_skip_link(client):
-    html = client.get("/").get_data(as_text=True)
+    html = client.get("/login").get_data(as_text=True)
     assert "Demo only. Not legal or regulatory advice. Rules simplified for illustration." in html
     assert 'href="#main"' in html
     assert 'lang="en"' in html
@@ -31,14 +31,14 @@ def test_unknown_page_is_404(client):
 
 
 def test_security_headers(client):
-    headers = client.get("/").headers
+    headers = client.get("/login").headers
     assert headers["X-Frame-Options"] == "DENY"
     assert "default-src 'self'" in headers["Content-Security-Policy"]
 
 
 def test_provider_name_is_configurable():
     app = create_app(TestConfig, PROVIDER_NAME="Example Compliance LLC")
-    html = app.test_client().get("/").get_data(as_text=True)
+    html = app.test_client().get("/login").get_data(as_text=True)
     assert "Example Compliance LLC" in html
 
 

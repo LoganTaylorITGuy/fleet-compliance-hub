@@ -1,0 +1,11 @@
+{% if current_user.is_authenticated %}
+  <div class="border-t border-slate-700 px-6 py-4">
+    <p class="text-sm font-medium text-white">{{ current_user.name }}</p>
+    <p class="text-xs text-slate-300">{{ role_label }}</p>
+    {% set lf = logout_form() %}
+    <form method="post" action="{{ url_for('auth.logout') }}" class="mt-2">
+      {{ lf.csrf_token }}
+      <button type="submit" class="text-sm text-slate-200 underline hover:text-white">Log out</button>
+    </form>
+  </div>
+{% endif %}

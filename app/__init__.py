@@ -7,7 +7,7 @@ from pathlib import Path
 from flask import Flask, render_template
 
 from .config import Config, resolve_secret_key
-from .extensions import csrf, db, migrate
+from .extensions import csrf, db, login_manager, migrate
 
 
 def create_app(config_object: type[Config] | None = None, **overrides) -> Flask:
@@ -36,6 +36,7 @@ def create_app(config_object: type[Config] | None = None, **overrides) -> Flask:
         render_as_batch=True,  # lets Alembic alter tables on SQLite
         compare_type=True,
     )
+    login_manager.init_app(app)
     csrf.init_app(app)
 
     _register_blueprints(app)
@@ -46,13 +47,26 @@ def create_app(config_object: type[Config] | None = None, **overrides) -> Flask:
 
 
 def _register_blueprints(app: Flask) -> None:
+    from .audit import bp as audit_bp
+    from .auth import bp as auth_bp
     from .main import bp as main_bp
 
+    app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(audit_bp)
 
 
 def _register_template_globals(app: Flask) -> None:
+    from flask import g
+    from flask_login import current_user
+
+    from .auth.forms import LogoutForm, SwitchTenantForm
+    from .auth.services import provider_tenants
+    from .formatting import register_filters
     from .navigation import visible_nav_items
+    from .permissions import ROLE_LABELS, can_edit, can_view, is_provider
+
+    register_filters(app)
 
     @app.context_processor
     def inject_globals() -> dict:
@@ -60,6 +74,14 @@ def _register_template_globals(app: Flask) -> None:
             "provider_name": app.config["PROVIDER_NAME"],
             "demo_mode": app.config["DEMO_MODE"],
             "nav_items": visible_nav_items,
+            "active_tenant": g.get("active_tenant"),
+            "can_view": lambda area: can_view(current_user, area),
+            "can_edit": lambda area: can_edit(current_user, area),
+            "is_provider_user": current_user.is_authenticated and is_provider(current_user),
+            "provider_tenants": lambda: provider_tenants(current_user),
+            "role_label": ROLE_LABELS.get(getattr(current_user, "role", None), ""),
+            "logout_form": LogoutForm,
+            "switch_form": SwitchTenantForm,
         }
 
 

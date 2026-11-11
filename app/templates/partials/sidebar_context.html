@@ -1,0 +1,32 @@
+{# Tenant context (who you're looking at) and the user menu, shown in the sidebar. #}
+{% if current_user.is_authenticated %}
+  <div class="mx-3 mb-3 rounded-md bg-slate-800 p-3">
+    {% if is_provider_user %}
+      {% set sf = switch_form() %}
+      <form method="post" action="{{ url_for('auth.switch_tenant') }}" data-autosubmit>
+        {{ sf.csrf_token }}
+        <input type="hidden" name="next" value="{{ request.path if active_tenant else '' }}">
+        <label for="tenant-switcher" class="block text-xs font-medium uppercase tracking-wide text-slate-300">Working in</label>
+        <div class="mt-1 flex gap-2">
+          <select id="tenant-switcher" name="tenant_id" class="min-w-0 flex-1 rounded border-0 bg-white px-2 py-1.5 text-sm text-slate-900">
+            {% if not active_tenant %}<option value="">Choose a carrier…</option>{% endif %}
+            {% for t in provider_tenants() %}
+              <option value="{{ t.id }}" {% if active_tenant and active_tenant.id == t.id %}selected{% endif %}>{{ t.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="rounded bg-blue-600 px-2 py-1.5 text-sm font-medium text-white hover:bg-blue-500">Open</button>
+        </div>
+      </form>
+      {% if active_tenant %}
+        {% set cf = logout_form() %}
+        <form method="post" action="{{ url_for('auth.clear_tenant') }}" class="mt-2">
+          {{ cf.csrf_token }}
+          <button type="submit" class="text-xs text-slate-300 underline hover:text-white">Back to all carriers</button>
+        </form>
+      {% endif %}
+    {% elif active_tenant %}
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-300">Carrier</p>
+      <p class="mt-1 text-sm font-semibold text-white">{{ active_tenant.name }}</p>
+    {% endif %}
+  </div>
+{% endif %}
