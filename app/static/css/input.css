@@ -50,6 +50,14 @@
   --glass-specular: 0.45;
   --glass-shadow: 0.16;
 
+  /* Floating glass (bottom pill) and popovers */
+  --float-alpha: 0.78;
+  --float-edge-alpha: 0.95;
+  --float-ring: 15 23 42;
+  --float-ring-alpha: 0.12;
+  --float-shadow: 0.32;
+  --popover-alpha: 0.88;
+
   /* Backdrop glows */
   --glow-1: 125 179 253;
   --glow-2: 110 231 183;
@@ -95,6 +103,12 @@
     --glass-highlight: 0.09;
     --glass-specular: 0.06;
     --glass-shadow: 0.55;
+    --float-alpha: 0.74;
+    --float-edge-alpha: 0.2;
+    --float-ring: 0 0 0;
+    --float-ring-alpha: 0.55;
+    --float-shadow: 0.75;
+    --popover-alpha: 0.86;
     --glow-1: 67 56 202;
     --glow-2: 13 148 136;
     --glow-3: 37 99 235;
@@ -140,6 +154,12 @@
   --glass-highlight: 0.09;
   --glass-specular: 0.06;
   --glass-shadow: 0.55;
+  --float-alpha: 0.74;
+  --float-edge-alpha: 0.2;
+  --float-ring: 0 0 0;
+  --float-ring-alpha: 0.55;
+  --float-shadow: 0.75;
+  --popover-alpha: 0.86;
   --glow-1: 67 56 202;
   --glow-2: 13 148 136;
   --glow-3: 37 99 235;
@@ -203,6 +223,48 @@
       0 18px 40px -18px rgb(15 23 42 / var(--glass-shadow));
   }
 
+  /* Floating glass: the bottom pill. A crisper rim, a hairline outer ring that
+     contrasts with whatever scrolls behind it, and a deeper shadow. */
+  .glass-float {
+    background-color: rgb(var(--glass) / var(--float-alpha));
+    border-color: rgb(var(--glass-rim) / var(--float-edge-alpha));
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / var(--glass-highlight)),
+      0 0 0 1px rgb(var(--float-ring) / var(--float-ring-alpha)),
+      0 2px 6px 0 rgb(15 23 42 / 0.1),
+      0 16px 36px -10px rgb(15 23 42 / var(--float-shadow));
+  }
+
+  /* Popovers and menus: more opaque and more blur, so text behind never competes. */
+  .glass-popover {
+    background-color: rgb(var(--glass) / var(--popover-alpha));
+    -webkit-backdrop-filter: blur(36px) saturate(180%);
+    backdrop-filter: blur(36px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / var(--glass-highlight)),
+      0 0 0 1px rgb(var(--float-ring) / var(--float-ring-alpha)),
+      0 24px 48px -12px rgb(15 23 42 / var(--float-shadow));
+  }
+
+  /* Glass bars that contain popovers (the header). The frosted layer lives on a
+     pseudo-element behind the content: an element with backdrop-filter becomes
+     the backdrop for its children, so a popover inside it couldn't blur the page. */
+  .glass-bar {
+    isolation: isolate;
+    border-bottom: 1px solid rgb(var(--glass-rim) / var(--glass-rim-alpha));
+    box-shadow: 0 1px 0 0 rgb(var(--float-ring) / calc(var(--float-ring-alpha) * 0.6));
+  }
+  .glass-bar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: rgb(var(--glass) / var(--glass-alpha));
+    background-image: linear-gradient(180deg, rgb(255 255 255 / var(--glass-specular)) 0%, rgb(255 255 255 / 0) 60%);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    backdrop-filter: blur(22px) saturate(170%);
+  }
+
   /* Tinted glass buttons (secondary actions). */
   .glass-button {
     background-color: rgb(var(--glass) / calc(var(--glass-alpha) + 0.1));
@@ -242,7 +304,8 @@
    without backdrop-filter, get solid panels with the same tokens. */
 @media (prefers-reduced-transparency: reduce) {
   .glass,
-  .glass-button {
+  .glass-button,
+  .glass-bar::before {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background-color: rgb(var(--glass-solid));
@@ -251,7 +314,8 @@
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass,
-  .glass-button {
+  .glass-button,
+  .glass-bar::before {
     background-color: rgb(var(--glass-solid));
     background-image: none;
   }

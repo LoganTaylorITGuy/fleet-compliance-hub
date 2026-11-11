@@ -4,7 +4,7 @@
   <div class="pointer-events-auto relative w-full max-w-2xl">
 
     <div id="search-results" data-search-panel hidden
-         class="glass absolute inset-x-0 bottom-full mb-2 max-h-[60vh] overflow-y-auto rounded-3xl p-2">
+         class="glass glass-popover absolute inset-x-0 bottom-full mb-2 max-h-[60vh] overflow-y-auto rounded-3xl p-2">
       <section aria-labelledby="results-recent-h" data-recents-section hidden>
         <h2 id="results-recent-h" class="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted">Recent</h2>
         <ul data-recents-list></ul>
@@ -29,7 +29,7 @@
       <p data-no-results hidden class="px-3 py-4 text-sm text-muted">No matches.</p>
     </div>
 
-    <div class="glass flex items-center gap-2 rounded-full p-1.5">
+    <div class="glass glass-float flex items-center gap-2 rounded-full p-1.5">
       <button type="button" data-open-dialog="nav-overlay"
               class="btn-primary transition-soft flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold">
         {{ icon("menu", "h-[18px] w-[18px]") }}<span>Menu</span>

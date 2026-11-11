@@ -74,6 +74,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Account and carrier menus in the header weren't actually blurred: an element
+  with backdrop-filter becomes the backdrop for its children, so the header's
+  own glass blocked theirs. The header's frosted layer now sits on a
+  pseudo-element, and menus use a more opaque, more blurred popover glass.
+- The bottom pill now has a defined edge (hairline ring, crisper rim, deeper
+  shadow) so it stands out from busy pages in both themes.
 - Screen-reader-only text inside scrolling tables made whole pages scroll
   sideways on phones.
 
