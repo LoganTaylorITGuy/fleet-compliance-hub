@@ -215,3 +215,67 @@ def test_app_code_never_uses_unscoped_primary_key_lookups():
             if pattern.search(line) and not line.lstrip().startswith(("def ", "#", '"', "Use")):
                 offenders.append(f"{path}:{number}: {line.strip()}")
     assert offenders == [], "Use scoped_get_or_404 instead:\n" + "\n".join(offenders)
+
+
+# --- URL guessing through the real pages (404, never 403 or data) ---------------
+
+
+def _other_tenant_ids(demo):
+    """IDs of records that belong to Blue Stem, while we log in to Red Draw."""
+    blue = demo["tenants"]["Blue Stem Transport Inc."]
+    academy = demo["tenants"]["High Plains Driving Academy"]
+    with all_tenants():
+        pick = lambda model, tid: db.session.scalars(  # noqa: E731
+            select(model.id).where(model.tenant_id == tid).order_by(model.id)
+        ).first()
+        from app.models import MaintenanceRecord, TrainingRecord
+
+        return {
+            "driver": pick(Driver, blue),
+            "vehicle": pick(Vehicle, blue),
+            "maintenance": pick(MaintenanceRecord, blue),
+            "training": pick(TrainingRecord, academy),
+        }
+
+
+def test_guessed_ids_in_urls_return_404(demo, demo_login):
+    ids = _other_tenant_ids(demo)
+    client = demo_login("owner@demo.example")  # Red Draw's Carrier Admin
+    for method, path in (
+        ("get", f"/drivers/{ids['driver']}"),
+        ("post", f"/drivers/{ids['driver']}/edit"),
+        ("get", f"/fleet/{ids['vehicle']}"),
+        ("post", f"/fleet/{ids['vehicle']}/maintenance"),
+        ("post", f"/fleet/maintenance/{ids['maintenance']}/complete"),
+        ("post", f"/training/{ids['training']}/complete"),
+    ):
+        response = getattr(client, method)(path, data={"status": "active"})
+        assert response.status_code == 404, f"{method.upper()} {path}"
+
+
+def test_list_pages_never_show_other_tenants(demo, demo_login):
+    blue = demo["tenants"]["Blue Stem Transport Inc."]
+    with all_tenants():
+        blue_names = {
+            d.full_name for d in db.session.scalars(select(Driver).where(Driver.tenant_id == blue))
+        }
+        red_names = {
+            d.full_name
+            for d in db.session.scalars(
+                select(Driver).where(Driver.tenant_id == demo["tenants"]["Red Draw Hauling Co."])
+            )
+        }
+    only_blue = blue_names - red_names
+    client = demo_login("viewer@demo.example")
+    for path in ("/drivers/", "/hours/", "/training/", "/dashboard/"):
+        html = client.get(path).get_data(as_text=True)
+        leaked = [name for name in only_blue if name in html]
+        assert leaked == [], f"{path} shows {leaked}"
+
+
+def test_provider_sees_other_carrier_only_after_switching(demo, demo_login):
+    ids = _other_tenant_ids(demo)
+    client = demo_login("admin@demo.example", demo["tenants"]["Red Draw Hauling Co."])
+    assert client.get(f"/drivers/{ids['driver']}").status_code == 404
+    client.post("/switch-tenant", data={"tenant_id": demo["tenants"]["Blue Stem Transport Inc."]})
+    assert client.get(f"/drivers/{ids['driver']}").status_code == 200

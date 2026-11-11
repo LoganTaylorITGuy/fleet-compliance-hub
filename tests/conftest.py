@@ -71,3 +71,46 @@ def login(client, world):
         return client
 
     return _login
+
+
+ROUTE_MODULES_USING_TODAY = (
+    "app.dashboard.routes",
+    "app.drivers.routes",
+    "app.fleet.routes",
+    "app.hos.routes",
+    "app.training.routes",
+)
+
+
+@pytest.fixture
+def demo(app, monkeypatch):
+    """The full seeded demo data set, with "today" pinned in every page."""
+    from datetime import date
+
+    from sqlalchemy import select
+
+    from app.models import Tenant
+    from app.seed import seed_demo
+
+    today = date(2026, 11, 17)
+    for module in ROUTE_MODULES_USING_TODAY:
+        monkeypatch.setattr(f"{module}.today", lambda: today, raising=False)
+    seed_demo("High Plains Compliance Co.", today=today, password=DEMO_PASSWORD)
+    tenants = {t.name: t.id for t in db.session.scalars(select(Tenant))}
+    db.session.expunge_all()
+    return {"today": today, "tenants": tenants}
+
+
+@pytest.fixture
+def demo_login(client):
+    """demo_login("owner@demo.example") logs in as a seeded demo user."""
+
+    def _login(email: str, tenant_id: int | None = None):
+        client.post("/logout")
+        response = client.post("/login", data={"email": email, "password": DEMO_PASSWORD})
+        assert response.status_code == 302, email
+        if tenant_id:
+            client.post("/switch-tenant", data={"tenant_id": tenant_id})
+        return client
+
+    return _login

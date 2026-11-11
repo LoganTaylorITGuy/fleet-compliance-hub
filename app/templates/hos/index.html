@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import record_link with context %}
+{% set page_title = "Hours of Service" %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-bold">Hours of Service</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      Driving hours for the last 7 days. <span class="inline-flex items-center gap-1 rounded bg-slate-200 px-1.5 py-0.5 text-xs font-semibold">Synced from Motive (mock)</span>
+      {% if last_synced %}Last sync {{ last_synced|localtime }}.{% endif %}
+    </p>
+  </div>
+  <form method="get" data-autosubmit class="flex items-center gap-2 text-sm">
+    <input id="violations" type="checkbox" name="violations" value="1" {% if violations_only %}checked{% endif %} class="h-4 w-4">
+    <label for="violations">Violations only</label>
+    <noscript><button type="submit" class="rounded bg-blue-700 px-2 py-1 text-white">Apply</button></noscript>
+  </form>
+</div>
+
+{% if violation_count %}
+  <p class="mt-4 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900" role="status"><span aria-hidden="true">● </span><strong>{{ violation_count }} violation{{ "s" if violation_count != 1 }}</strong> in the last 7 days. Drivers with violations are listed first.</p>
+{% endif %}
+
+<div class="mt-4 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
+  <table class="min-w-full divide-y divide-slate-200 text-sm">
+    <caption class="sr-only">Driving hours per driver per day; cells with violations are marked</caption>
+    <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+      <tr>
+        <th scope="col" class="sticky left-0 bg-slate-50 px-4 py-2 text-left">Driver</th>
+        {% for d in days %}<th scope="col" class="px-3 py-2 text-center"><span class="block">{{ d.strftime("%a") }}</span><span class="block font-normal normal-case">{{ d.strftime("%m-%d") }}</span></th>{% endfor %}
+        <th scope="col" class="px-3 py-2 text-right">7-day driving</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for row in rows %}
+        <tr>
+          <th scope="row" class="sticky left-0 whitespace-nowrap bg-white px-4 py-2 text-left font-normal">{{ record_link(row.driver) }}</th>
+          {% for log in row.cells %}
+            {% if log and log.violation %}
+              <td class="bg-red-100 px-3 py-2 text-center font-semibold tabular-nums text-red-900" title="{{ log.violation_note }}">
+                <span aria-hidden="true">● </span>{{ "%.1f"|format(log.driving_hours) }}<span class="sr-only"> hours, violation: {{ log.violation_note }}</span>
+              </td>
+            {% elif log %}
+              <td class="px-3 py-2 text-center tabular-nums {{ 'text-slate-400' if log.driving_hours == 0 else '' }}">{{ "%.1f"|format(log.driving_hours) if log.driving_hours else "off" }}</td>
+            {% else %}
+              <td class="px-3 py-2 text-center text-slate-400">—<span class="sr-only">no log</span></td>
+            {% endif %}
+          {% endfor %}
+          <td class="px-3 py-2 text-right tabular-nums">{{ "%.1f"|format(row.driving_total) }} h</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9" class="px-4 py-8 text-center text-slate-600">{{ "No violations in the last 7 days." if violations_only else "No hours logged in the last 7 days." }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="mt-3 text-xs text-slate-600">Violations are flagged by the ELD. This demo flags driving over 11 hours or on-duty over 14 hours in a day.</p>
+{% endblock %}

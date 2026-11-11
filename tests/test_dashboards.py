@@ -1,32 +1,19 @@
 import re
 from datetime import date, timedelta
 
-import pytest
 from sqlalchemy import select
 
 from app.extensions import db
-from app.models import Driver, Tenant
-from app.seed import seed_demo
+from app.models import Driver
 from app.tenancy import all_tenants
 
 from .factories import DEMO_PASSWORD
 
 
-@pytest.fixture
-def demo(app, monkeypatch):
-    today = date(2026, 11, 17)
-    monkeypatch.setattr("app.dashboard.routes.today", lambda: today)
-    seed_demo("High Plains Compliance Co.", today=today, password=DEMO_PASSWORD)
-    tenants = {t.name: t.id for t in db.session.scalars(select(Tenant))}
-    db.session.expunge_all()
-    return {"today": today, "tenants": tenants}
-
-
 def login(client, email):
     client.post("/logout")
-    assert (
-        client.post("/login", data={"email": email, "password": DEMO_PASSWORD}).status_code == 302
-    )
+    response = client.post("/login", data={"email": email, "password": DEMO_PASSWORD})
+    assert response.status_code == 302
     return client
 
 

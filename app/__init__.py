@@ -50,11 +50,17 @@ def _register_blueprints(app: Flask) -> None:
     from .audit import bp as audit_bp
     from .auth import bp as auth_bp
     from .dashboard import bp as dashboard_bp
+    from .drivers import bp as drivers_bp
+    from .fleet import bp as fleet_bp
+    from .hos import bp as hos_bp
     from .main import bp as main_bp
+    from .training import bp as training_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(dashboard_bp)
+    for feature_bp in (drivers_bp, fleet_bp, hos_bp, training_bp):
+        app.register_blueprint(feature_bp)
     app.register_blueprint(audit_bp)
 
 
