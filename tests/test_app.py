@@ -72,3 +72,9 @@ def test_blank_env_values_fall_back_to_defaults(monkeypatch):
     assert env_str("DATABASE_URL", "sqlite://") == "sqlite://"
     assert env_bool("DEMO_MODE") is True
     assert env_bool("UNSET_FLAG_FOR_TEST", default=True) is True
+
+
+def test_favicon_is_public(client):
+    response = client.get("/favicon.ico")
+    assert response.status_code == 301
+    assert response.headers["Location"].endswith("/static/favicon.svg")

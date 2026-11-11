@@ -49,10 +49,12 @@ def create_app(config_object: type[Config] | None = None, **overrides) -> Flask:
 def _register_blueprints(app: Flask) -> None:
     from .audit import bp as audit_bp
     from .auth import bp as auth_bp
+    from .dashboard import bp as dashboard_bp
     from .main import bp as main_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(dashboard_bp)
     app.register_blueprint(audit_bp)
 
 
@@ -65,6 +67,7 @@ def _register_template_globals(app: Flask) -> None:
     from .formatting import register_filters
     from .navigation import visible_nav_items
     from .permissions import ROLE_LABELS, can_edit, can_view, is_provider
+    from .views import display_name, link_for
 
     register_filters(app)
 
@@ -82,6 +85,8 @@ def _register_template_globals(app: Flask) -> None:
             "role_label": ROLE_LABELS.get(getattr(current_user, "role", None), ""),
             "logout_form": LogoutForm,
             "switch_form": SwitchTenantForm,
+            "link_for": link_for,
+            "display_name": display_name,
         }
 
 

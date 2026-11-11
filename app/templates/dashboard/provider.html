@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import count_pills, stat_card with context %}
+{% set page_title = "Carrier clients" %}
+{% block content %}
+<h1 class="text-2xl font-bold">Carrier clients</h1>
+<p class="mt-1 text-sm text-slate-600">Every carrier {{ provider_name }} manages, most urgent first.</p>
+
+<div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+  {{ stat_card("Carriers", rows|length) }}
+  {{ stat_card("Drivers and units", driver_total + unit_total, note=driver_total ~ " drivers · " ~ unit_total ~ " units") }}
+  {{ stat_card("Action needed", totals.red, note="Expired, failed, open defect or recent HOS violation") }}
+  {{ stat_card("Due in 30 days", totals.yellow) }}
+</div>
+
+<div class="mt-6 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
+  <table class="min-w-full divide-y divide-slate-200 text-sm">
+    <caption class="sr-only">Carrier clients sorted by urgency: most items needing action first</caption>
+    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+      <tr>
+        <th scope="col" class="px-4 py-3">Carrier</th>
+        <th scope="col" class="px-4 py-3">Drivers</th>
+        <th scope="col" class="px-4 py-3">Units</th>
+        <th scope="col" class="px-4 py-3">Status (drivers and units)</th>
+        <th scope="col" class="px-4 py-3"><span class="sr-only">Open</span></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for row in rows %}
+        <tr>
+          <th scope="row" class="px-4 py-3 text-left font-semibold">
+            {{ row.tenant.name }}
+            <span class="block text-xs font-normal text-slate-600">
+              {% if row.tenant.kind == "academy" %}Academy fleet{% else %}USDOT {{ row.tenant.dot_number }}{% endif %} · {{ row.tenant.city }}, {{ row.tenant.state }}
+            </span>
+          </th>
+          <td class="px-4 py-3 tabular-nums">{{ row.summary.drivers|length }}</td>
+          <td class="px-4 py-3 tabular-nums">{{ row.summary.vehicles|length }}</td>
+          <td class="px-4 py-3">{{ count_pills(row.summary.counts) }}</td>
+          <td class="px-4 py-3 text-right">
+            {% set sf = switch_form() %}
+            <form method="post" action="{{ url_for('auth.switch_tenant') }}">
+              {{ sf.csrf_token }}
+              <input type="hidden" name="tenant_id" value="{{ row.tenant.id }}">
+              <input type="hidden" name="next" value="{{ url_for('dashboard.carrier') }}">
+              <button type="submit" class="rounded-md bg-blue-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-800">Open<span class="sr-only"> {{ row.tenant.name }}</span></button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-600">No carrier clients yet. Run <code>python seed.py</code> to load demo data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

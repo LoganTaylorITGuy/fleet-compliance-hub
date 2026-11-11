@@ -33,6 +33,10 @@ All notable changes to this project are documented here. The format follows
   test, an unresolved DVIR defect or an HOS violation in the last 7 days; yellow
   for anything due within 30 days; green otherwise. Thresholds live in
   `app/compliance/thresholds.py`. Unit tests cover every rule and boundary.
+- Provider dashboard (every carrier, ranked most urgent first, with totals and
+  one-click Open) and carrier dashboard (driver and unit counts, Needs action
+  now, Expiring in 30 days, per-driver and per-unit status). Status badges use
+  text and shapes, not color alone; layouts adapt to phone width.
 
 ### Changed
 

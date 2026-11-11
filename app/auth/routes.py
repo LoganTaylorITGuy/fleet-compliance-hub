@@ -22,7 +22,7 @@ from .services import (
 )
 
 # Endpoints reachable without logging in.
-PUBLIC_ENDPOINTS = {"auth.login", "auth.demo_login", "main.healthz", "static"}
+PUBLIC_ENDPOINTS = {"auth.login", "auth.demo_login", "main.healthz", "main.favicon", "static"}
 
 login_manager.login_view = "auth.login"
 login_manager.login_message = "Please log in to continue."
