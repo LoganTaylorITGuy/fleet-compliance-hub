@@ -17,7 +17,7 @@
             <th scope="col" class="min-w-44 px-3 py-3 align-top">
               <span class="block text-sm font-semibold text-ink">{{ header }}</span>
               <label for="col_{{ loop.index0 }}" class="mt-2 block font-normal text-muted">Import as</label>
-              <select id="col_{{ loop.index0 }}" name="col_{{ loop.index0 }}" class="mt-1 w-full rounded border px-2 py-1 text-sm font-normal{{ 'border-ok-line bg-ok-soft/70' if staged.mapping.get(header) else 'border-line-strong' }}">
+              <select id="col_{{ loop.index0 }}" name="col_{{ loop.index0 }}" class="mt-1 w-full rounded border px-2 py-1 text-sm font-normal {{ 'border-ok-line bg-ok-soft/70' if staged.mapping.get(header) else 'border-line-strong' }}">
                 <option value="">Don't import</option>
                 {% for f in spec.fields %}<option value="{{ f.name }}" {% if staged.mapping.get(header) == f.name %}selected{% endif %}>{{ f.label }}{{ " *" if f.required }}</option>{% endfor %}
               </select>
