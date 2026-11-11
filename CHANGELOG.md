@@ -19,3 +19,9 @@ All notable changes to this project are documented here. The format follows
   data is filtered by tenant in one place, failing closed when no tenant is set.
 - Tenant isolation test suite and CI jobs for isolation tests and migrations
   (fresh SQLite and PostgreSQL 16, upgrade, drift check, downgrade).
+- Login and logout (Flask-Login, hashed passwords, CSRF on every form), four
+  roles with a single permission table, provider tenant switcher, and a
+  one-click demo login switcher that only exists when `DEMO_MODE=true`.
+- Automatic audit log of every create, update and delete on carrier data, with
+  before/after values, plus a filterable Audit log page (Provider Admins see all
+  carriers; Carrier Admins see their own).

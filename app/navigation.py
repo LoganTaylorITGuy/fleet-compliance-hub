@@ -9,29 +9,51 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from flask import current_app
+from flask import current_app, g
+from flask_login import current_user
+
+from .permissions import can_view, is_provider
 
 
 @dataclass(frozen=True)
 class NavItem:
     label: str
     endpoint: str
+    area: str
+    provider_only: bool = False
+    needs_tenant: bool = True
 
 
 NAV_ITEMS: tuple[NavItem, ...] = (
-    NavItem("Dashboard", "main.index"),
-    NavItem("Carrier clients", "dashboard.provider"),
-    NavItem("Drivers", "drivers.index"),
-    NavItem("Fleet", "fleet.index"),
-    NavItem("Hours of Service", "hos.index"),
-    NavItem("Training", "training.index"),
-    NavItem("Import", "imports.index"),
-    NavItem("Integrations", "integrations.index"),
-    NavItem("Audit log", "audit.index"),
+    NavItem(
+        "Carrier clients", "dashboard.provider", "dashboard", provider_only=True, needs_tenant=False
+    ),
+    NavItem("Dashboard", "dashboard.carrier", "dashboard"),
+    NavItem("Drivers", "drivers.index", "drivers"),
+    NavItem("Fleet", "fleet.index", "fleet"),
+    NavItem("Hours of Service", "hos.index", "hos"),
+    NavItem("Training", "training.index", "training"),
+    NavItem("Import", "imports.index", "imports"),
+    NavItem("Integrations", "integrations.index", "integrations"),
+    NavItem("Audit log", "audit.index", "audit", needs_tenant=False),
 )
 
 
 def visible_nav_items() -> list[NavItem]:
-    """Return the nav items whose views exist in this build."""
+    """Nav items whose views exist in this build and that this user may see.
+
+    Provider users see tenant pages only after picking a carrier in the switcher.
+    """
+    if not current_user.is_authenticated:
+        return []
     registered = current_app.view_functions
-    return [item for item in NAV_ITEMS if item.endpoint in registered]
+    provider = is_provider(current_user)
+    has_tenant = g.get("active_tenant") is not None
+    return [
+        item
+        for item in NAV_ITEMS
+        if item.endpoint in registered
+        and can_view(current_user, item.area)
+        and (provider or not item.provider_only)
+        and (has_tenant or not item.needs_tenant)
+    ]

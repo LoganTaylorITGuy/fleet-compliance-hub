@@ -88,3 +88,34 @@ def populate_tenant(tenant: Tenant, prefix: str) -> dict[str, object]:
         db.session.add_all(rows.values())
         db.session.commit()
     return rows
+
+
+DEMO_PASSWORD = "demo-pass-123"
+
+
+def make_user(
+    email: str,
+    role: str,
+    *,
+    provider: Provider | None = None,
+    tenant: Tenant | None = None,
+    permissions: str = "",
+    password: str = DEMO_PASSWORD,
+    active: bool = True,
+):
+    from app.auth.services import hash_password
+    from app.models import User
+
+    user = User(
+        email=email,
+        name=email.split("@")[0].title(),
+        role=role,
+        provider_id=provider.id if provider else None,
+        tenant_id=tenant.id if tenant else None,
+        permissions=permissions,
+        password_hash=hash_password(password),
+        active=active,
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user

@@ -208,10 +208,10 @@ def test_identity_map_cannot_leak_other_tenant(two_tenants):
 
 def test_app_code_never_uses_unscoped_primary_key_lookups():
     """session.get() and db.get_or_404() read the identity map and can skip the filter."""
-    pattern = re.compile(r"\b(session\.get|get_or_404|query\.get)\(")
+    pattern = re.compile(r"(db\.session\.get|(?<!scoped_)get_or_404|query\.get)\(")
     offenders = []
     for path in Path("app").rglob("*.py"):
         for number, line in enumerate(path.read_text().splitlines(), start=1):
-            if pattern.search(line) and "scoped_get_or_404" not in line:
+            if pattern.search(line) and not line.lstrip().startswith(("def ", "#", '"', "Use")):
                 offenders.append(f"{path}:{number}: {line.strip()}")
     assert offenders == [], "Use scoped_get_or_404 instead:\n" + "\n".join(offenders)

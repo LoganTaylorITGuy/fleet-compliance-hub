@@ -12,6 +12,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime
 from enum import StrEnum
 
+from flask_login import UserMixin
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -135,7 +136,7 @@ class Tenant(TimestampMixin, db.Model):
     provider: Mapped[Provider] = relationship(back_populates="tenants")
 
 
-class User(TimestampMixin, db.Model):
+class User(UserMixin, TimestampMixin, db.Model):
     __tablename__ = "users"
     __table_args__ = (
         CheckConstraint(
@@ -160,6 +161,10 @@ class User(TimestampMixin, db.Model):
 
     provider: Mapped[Provider | None] = relationship()
     tenant: Mapped[Tenant | None] = relationship()
+
+    @property
+    def is_active(self) -> bool:  # Flask-Login: inactive users can't log in
+        return self.active
 
 
 # ---------------------------------------------------------------------------
