@@ -27,7 +27,7 @@ def test_login_success_and_logout(client, world):
         "/login", data={"email": "OWNER@test.example ", "password": DEMO_PASSWORD}
     )
     assert response.status_code == 302
-    assert "Carrier A" in client.get("/").get_data(as_text=True)
+    assert "Carrier A" in client.get("/", follow_redirects=True).get_data(as_text=True)
     client.post("/logout")
     assert client.get("/").status_code == 302
 
@@ -81,7 +81,7 @@ def test_demo_switcher_shown_and_works_in_demo_mode(client, world, monkeypatch):
     assert "Demo logins" in html
     response = client.post("/login/demo", data={"persona": "carrier_viewer"})
     assert response.status_code == 302
-    assert "Viewer" in client.get("/").get_data(as_text=True)
+    assert "Viewer" in client.get("/", follow_redirects=True).get_data(as_text=True)
 
 
 def test_demo_switcher_unknown_persona(client, world):
@@ -108,9 +108,9 @@ def test_csrf_enforced_when_enabled(world):
 
 def test_provider_switches_tenant(login, world):
     client = login("provider_admin")
-    assert "Choose a carrier" in client.get("/").get_data(as_text=True)
+    assert "Choose a carrier" in client.get("/", follow_redirects=True).get_data(as_text=True)
     client.post("/switch-tenant", data={"tenant_id": world["b"]})
-    assert "Carrier B" in client.get("/").get_data(as_text=True)
+    assert "Carrier B" in client.get("/", follow_redirects=True).get_data(as_text=True)
 
 
 def test_provider_cannot_switch_to_another_providers_tenant(login, world):
@@ -122,7 +122,7 @@ def test_provider_cannot_switch_to_another_providers_tenant(login, world):
 def test_carrier_cannot_switch_tenant(login, world):
     client = login("carrier_admin")
     assert client.post("/switch-tenant", data={"tenant_id": world["b"]}).status_code == 403
-    assert "Carrier A" in client.get("/").get_data(as_text=True)
+    assert "Carrier A" in client.get("/", follow_redirects=True).get_data(as_text=True)
 
 
 def test_logout_requires_post(login):

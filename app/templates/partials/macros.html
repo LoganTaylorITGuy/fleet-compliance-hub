@@ -1,0 +1,50 @@
+{# Status is always shown as text plus a shape, never by color alone (WCAG 1.4.1). #}
+{% macro status_badge(level, size="sm") -%}
+  {%- set styles = {
+    "red": ("bg-red-100 text-red-900 ring-red-300", "●"),
+    "yellow": ("bg-amber-100 text-amber-900 ring-amber-300", "▲"),
+    "green": ("bg-emerald-100 text-emerald-900 ring-emerald-300", "✓"),
+  } -%}
+  {%- set cls, icon = styles[level.key] -%}
+  <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 {{ 'text-xs' if size == 'sm' else 'text-sm' }} font-semibold ring-1 ring-inset {{ cls }}">
+    <span aria-hidden="true">{{ icon }}</span>{{ level.text }}
+  </span>
+{%- endmacro %}
+
+{% macro count_pills(counts) -%}
+  <span class="inline-flex flex-wrap gap-1.5 text-xs font-semibold">
+    <span class="rounded bg-red-100 px-1.5 py-0.5 text-red-900"><span aria-hidden="true">● </span>{{ counts.red }}<span class="sr-only"> action needed</span></span>
+    <span class="rounded bg-amber-100 px-1.5 py-0.5 text-amber-900"><span aria-hidden="true">▲ </span>{{ counts.yellow }}<span class="sr-only"> due soon</span></span>
+    <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-900"><span aria-hidden="true">✓ </span>{{ counts.green }}<span class="sr-only"> current</span></span>
+  </span>
+{%- endmacro %}
+
+{% macro record_link(obj) -%}
+  {%- set href = link_for(obj) -%}
+  {%- if href %}<a href="{{ href }}" class="font-medium text-blue-700 underline hover:text-blue-900">{{ display_name(obj) }}</a>
+  {%- else %}<span class="font-medium">{{ display_name(obj) }}</span>{% endif -%}
+{%- endmacro %}
+
+{% macro finding_list(items, empty) -%}
+  {% if items %}
+    <ul class="divide-y divide-slate-100">
+      {% for obj, f in items %}
+        <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3 text-sm">
+          <span>{{ record_link(obj) }} <span class="text-slate-600">· {{ f.label }}</span></span>
+          <span class="tabular-nums text-slate-800">{{ f.message }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="px-4 py-6 text-sm text-slate-600">{{ empty }}</p>
+  {% endif %}
+{%- endmacro %}
+
+{% macro stat_card(title, value, counts=None, note=None) -%}
+  <div class="rounded-lg bg-white p-4 ring-1 ring-slate-200">
+    <p class="text-sm font-medium text-slate-600">{{ title }}</p>
+    <p class="mt-1 text-3xl font-bold tabular-nums">{{ value }}</p>
+    {% if counts %}<div class="mt-2">{{ count_pills(counts) }}</div>{% endif %}
+    {% if note %}<p class="mt-2 text-xs text-slate-600">{{ note }}</p>{% endif %}
+  </div>
+{%- endmacro %}

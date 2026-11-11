@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import status_badge, count_pills, record_link, finding_list, stat_card with context %}
+{% set page_title = tenant.name %}
+{% block content %}
+<div class="flex flex-wrap items-baseline justify-between gap-2">
+  <div>
+    <h1 class="text-2xl font-bold">{{ tenant.name }}</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      {% if tenant.kind == "academy" %}Academy fleet{% else %}USDOT {{ tenant.dot_number }} · {{ tenant.mc_number }}{% endif %} · {{ tenant.city }}, {{ tenant.state }}
+    </p>
+  </div>
+</div>
+
+<div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+  {{ stat_card("Drivers", summary.drivers|length, summary.driver_counts) }}
+  {{ stat_card("Units", summary.vehicles|length, summary.vehicle_counts) }}
+  {{ stat_card("Action needed", summary.needs_action|length, note="Individual items, across drivers and units") }}
+  {{ stat_card("Expiring in 30 days", summary.expiring_soon|length) }}
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-2">
+  <section aria-labelledby="action-heading" class="rounded-lg bg-white ring-1 ring-red-200">
+    <h2 id="action-heading" class="flex items-center gap-2 border-b border-red-100 bg-red-50 px-4 py-3 text-base font-semibold text-red-900"><span aria-hidden="true">●</span> Needs action now</h2>
+    {{ finding_list(summary.needs_action, "Nothing needs action right now.") }}
+  </section>
+  <section aria-labelledby="expiring-heading" class="rounded-lg bg-white ring-1 ring-amber-200">
+    <h2 id="expiring-heading" class="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-4 py-3 text-base font-semibold text-amber-900"><span aria-hidden="true">▲</span> Expiring in 30 days</h2>
+    {{ finding_list(summary.expiring_soon, "Nothing is due in the next 30 days.") }}
+  </section>
+</div>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-2">
+  <section aria-labelledby="drivers-heading">
+    <h2 id="drivers-heading" class="text-lg font-semibold">Drivers</h2>
+    <div class="mt-2 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+          <tr><th scope="col" class="px-4 py-2">Driver</th><th scope="col" class="px-4 py-2">Status</th><th scope="col" class="hidden px-4 py-2 sm:table-cell">Top issue</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in summary.drivers|sort(attribute="status.level", reverse=true) %}
+            {% set top = row.status.sorted_findings()|first %}
+            <tr>
+              <th scope="row" class="px-4 py-2 text-left font-normal">{{ record_link(row.driver) }}{% if row.driver.is_student %} <span class="text-xs text-slate-600">(student)</span>{% endif %}{% if top %}<span class="mt-0.5 block text-xs text-slate-600 sm:hidden">{{ top.label }}: {{ top.message }}</span>{% endif %}</th>
+              <td class="px-4 py-2">{{ status_badge(row.status.level) }}</td>
+              <td class="hidden px-4 py-2 text-slate-700 sm:table-cell">{% if top %}{{ top.label }}: {{ top.message }}{% endif %}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="px-4 py-6 text-center text-slate-600">No drivers yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section aria-labelledby="units-heading">
+    <h2 id="units-heading" class="text-lg font-semibold">Units</h2>
+    <div class="mt-2 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+          <tr><th scope="col" class="px-4 py-2">Unit</th><th scope="col" class="px-4 py-2">Status</th><th scope="col" class="hidden px-4 py-2 sm:table-cell">Top issue</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in summary.vehicles|sort(attribute="status.level", reverse=true) %}
+            {% set top = row.status.sorted_findings()|first %}
+            <tr>
+              <th scope="row" class="px-4 py-2 text-left font-normal"><span class="whitespace-nowrap">{{ record_link(row.vehicle) }}</span> <span class="text-xs text-slate-600">{{ row.vehicle.vehicle_type|label }}</span>{% if top %}<span class="mt-0.5 block text-xs text-slate-600 sm:hidden">{{ top.label }}: {{ top.message }}</span>{% endif %}</th>
+              <td class="px-4 py-2">{{ status_badge(row.status.level) }}</td>
+              <td class="hidden px-4 py-2 text-slate-700 sm:table-cell">{% if top %}{{ top.label }}: {{ top.message }}{% endif %}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="px-4 py-6 text-center text-slate-600">No units yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

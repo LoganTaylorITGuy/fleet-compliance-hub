@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ page_title|default('Fleet Compliance Hub') }}{% endblock %} · {{ provider_name }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
@@ -29,7 +30,7 @@
       {% include "partials/sidebar_context.html" %}
       <ul class="space-y-1 px-3 pb-6 pt-2 md:pt-0">
         {% for item in nav_items() %}
-          {% set active = request.endpoint and request.endpoint.split('.')[0] == item.endpoint.split('.')[0] %}
+          {% set active = request.endpoint == item.endpoint or (request.endpoint and request.endpoint.split('.')[0] == item.endpoint.split('.')[0] and item.endpoint.endswith('.index')) %}
           <li>
             <a href="{{ url_for(item.endpoint) }}"
                class="block rounded-md px-3 py-2 text-sm font-medium {{ 'bg-slate-700 text-white' if active else 'text-slate-200 hover:bg-slate-800 hover:text-white' }} focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"

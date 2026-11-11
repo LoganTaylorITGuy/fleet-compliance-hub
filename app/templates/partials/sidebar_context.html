@@ -5,7 +5,7 @@
       {% set sf = switch_form() %}
       <form method="post" action="{{ url_for('auth.switch_tenant') }}" data-autosubmit>
         {{ sf.csrf_token }}
-        <input type="hidden" name="next" value="{{ request.path if active_tenant else '' }}">
+        <input type="hidden" name="next" value="{{ url_for('dashboard.carrier') }}">
         <label for="tenant-switcher" class="block text-xs font-medium uppercase tracking-wide text-slate-300">Working in</label>
         <div class="mt-1 flex gap-2">
           <select id="tenant-switcher" name="tenant_id" class="min-w-0 flex-1 rounded border-0 bg-white px-2 py-1.5 text-sm text-slate-900">
