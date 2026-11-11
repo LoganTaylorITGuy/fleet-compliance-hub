@@ -2,45 +2,45 @@
 {% set page_title = "Integrations" %}
 {% block content %}
 <h1 class="text-2xl font-bold">Integrations</h1>
-<p class="mt-1 max-w-prose text-sm text-slate-600">Data from outside systems flows in here, so nobody types it twice.</p>
+<p class="mt-1 max-w-prose text-sm text-muted">Data from outside systems flows in here, so nobody types it twice.</p>
 
-<section aria-labelledby="motive-h" class="mt-6 max-w-3xl rounded-lg bg-white p-5 ring-1 ring-slate-200">
+<section aria-labelledby="motive-h" class="mt-6 max-w-3xl rounded-2xl glass p-5">
   <div class="flex flex-wrap items-start justify-between gap-3">
     <div>
       <h2 id="motive-h" class="text-lg font-semibold">Motive</h2>
-      <p class="text-sm text-slate-600">ELD and fleet platform: drivers, hours of service, DVIRs and odometers.</p>
+      <p class="text-sm text-muted">ELD and fleet platform: drivers, hours of service, DVIRs and odometers.</p>
     </div>
     {% if connected %}
-      <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-900 ring-1 ring-inset ring-emerald-300"><span aria-hidden="true">✓</span>{{ "Connected (demo mode)" if demo else "Connected" }}</span>
+      <span class="inline-flex items-center gap-1 rounded-full bg-ok-soft px-3 py-1 text-sm font-semibold text-ok-ink ring-1 ring-inset ring-ok-line"><span aria-hidden="true">✓</span>{{ "Connected (demo mode)" if demo else "Connected" }}</span>
     {% else %}
-      <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-800 ring-1 ring-inset ring-slate-300">Not connected</span>
+      <span class="inline-flex items-center gap-1 rounded-full bg-tint/[0.06] px-3 py-1 text-sm font-semibold text-ink ring-1 ring-inset ring-line-strong">Not connected</span>
     {% endif %}
   </div>
 
   <dl class="mt-4 grid gap-4 sm:grid-cols-3">
-    <div><dt class="text-xs font-medium uppercase tracking-wide text-slate-600">Last sync</dt><dd class="mt-0.5 text-sm tabular-nums">{{ connection.last_synced_at|localtime or "Never" }}</dd></div>
-    <div><dt class="text-xs font-medium uppercase tracking-wide text-slate-600">Data source</dt><dd class="mt-0.5 text-sm">{{ "Generated mock data" if demo else "Motive API" }}</dd></div>
-    <div><dt class="text-xs font-medium uppercase tracking-wide text-slate-600">API key</dt><dd class="mt-0.5 text-sm">{{ "Set in environment" if has_key else "Not set (not needed in demo mode)" }}</dd></div>
+    <div><dt class="text-xs font-medium uppercase tracking-wide text-muted">Last sync</dt><dd class="mt-0.5 text-sm tabular-nums">{{ connection.last_synced_at|localtime or "Never" }}</dd></div>
+    <div><dt class="text-xs font-medium uppercase tracking-wide text-muted">Data source</dt><dd class="mt-0.5 text-sm">{{ "Generated mock data" if demo else "Motive API" }}</dd></div>
+    <div><dt class="text-xs font-medium uppercase tracking-wide text-muted">API key</dt><dd class="mt-0.5 text-sm">{{ "Set in environment" if has_key else "Not set (not needed in demo mode)" }}</dd></div>
   </dl>
 
   {% if action_form and connected %}
     <form method="post" action="{{ url_for('integrations.motive_sync') }}" class="mt-5">
       {{ action_form.csrf_token }}
-      <button type="submit" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">Sync now</button>
-      <span class="ml-2 text-xs text-slate-600">Pulls new hours of service, today's DVIRs and odometers for {{ active_tenant.name }}{{ '' if active_tenant.name.endswith('.') else '.' }}</span>
+      <button type="submit" class="rounded-md btn-primary px-4 py-2 text-sm font-semibold">Sync now</button>
+      <span class="ml-2 text-xs text-muted">Pulls new hours of service, today's DVIRs and odometers for {{ active_tenant.name }}{{ '' if active_tenant.name.endswith('.') else '.' }}</span>
     </form>
   {% endif %}
 
   {% if history %}
     <h3 class="mt-6 text-sm font-semibold">Recent syncs</h3>
-    <ul class="mt-2 divide-y divide-slate-100 text-sm">
+    <ul class="mt-2 divide-y divide-line/70 text-sm">
       {% for h in history %}
-        <li class="py-2"><span class="tabular-nums text-slate-600">{{ h.created_at|localtime }}</span> · {{ h.user.name if h.user else "System" }}<span class="block text-slate-800">{{ h.summary }}</span></li>
+        <li class="py-2"><span class="tabular-nums text-muted">{{ h.created_at|localtime }}</span> · {{ h.user.name if h.user else "System" }}<span class="block text-ink">{{ h.summary }}</span></li>
       {% endfor %}
     </ul>
   {% endif %}
 
-  <div class="mt-6 rounded-md bg-amber-50 p-3 text-xs text-amber-950 ring-1 ring-amber-200">
+  <div class="mt-6 rounded-md bg-warn-soft/70 p-3 text-xs text-warn-ink ring-1 ring-warn-line/50">
     <strong>Demo stub.</strong> No calls are made to Motive. Endpoint paths and fields must be confirmed against Motive's developer documentation before real use. The API key is read from the environment and never stored in the database.
   </div>
 </section>

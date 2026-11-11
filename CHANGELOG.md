@@ -57,6 +57,20 @@ All notable changes to this project are documented here. The format follows
 - Integrations page with "Connected (demo mode)" and Sync now: an incremental,
   idempotent sync of today's hours, recent DVIRs and odometers that never
   rewrites past days.
+- Design system: color tokens (CSS variables) with light and dark themes; dark
+  follows the device by default, with a one-click toggle in the header and an
+  Auto/Light/Dark choice in the account menu (saved, no flash on load).
+- Liquid glass look: frosted translucent panels with a specular highlight over a
+  soft gradient backdrop, falling back to solid panels when the OS asks for
+  reduced transparency. Contrast is checked by tests in both themes.
+- Full-width layout: a header (carrier switcher, theme toggle, help, account
+  menu) and an always-available bottom bar with a Menu button (navigation
+  overlay with every page and the carrier switcher) and a search bar that
+  finds pages, drivers and units as you type (Cmd/Ctrl+K or /).
+- Search suggestions: clicking into the empty search bar shows recently viewed
+  pages, drivers and units (kept in the browser per user and per carrier,
+  cleared on log out); typing suggests pages ranked by name and keywords
+  ("dvir" finds Fleet, "logs" finds Hours of Service).
 
 ### Fixed
 
@@ -65,5 +79,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Replaced the left sidebar with the header and bottom bar, so pages use the
+  full screen width.
 - Seed data assigns red/yellow quotas per tenant instead of random dates per
   item, which had compounded into a mostly red fleet.

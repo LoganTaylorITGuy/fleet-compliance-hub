@@ -5,7 +5,7 @@
 <div class="flex flex-wrap items-end justify-between gap-4">
   <div>
     <h1 class="text-2xl font-bold">Audit log</h1>
-    <p class="mt-1 text-sm text-slate-600">
+    <p class="mt-1 text-sm text-muted">
       Every change to compliance records, with who made it and when (US Central time).
       {% if not show_tenant %}Showing your company only.{% endif %}
     </p>
@@ -13,44 +13,44 @@
   {% if active_tenant %}{{ export_button("audit") }}{% endif %}
 </div>
 
-<form method="get" class="mt-6 grid gap-3 rounded-lg bg-white p-4 ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-4" data-autosubmit>
+<form method="get" class="mt-6 grid gap-3 rounded-2xl glass p-4 sm:grid-cols-2 lg:grid-cols-4" data-autosubmit>
   {% if show_tenant %}
     <div>
-      <label for="f-tenant" class="block text-xs font-medium text-slate-700">Carrier</label>
-      <select id="f-tenant" name="tenant_id" class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm">
+      <label for="f-tenant" class="block text-xs font-medium text-muted">Carrier</label>
+      <select id="f-tenant" name="tenant_id" class="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm">
         <option value="">All carriers</option>
         {% for t in tenants.values() %}<option value="{{ t.id }}" {% if filters.tenant_id == t.id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
       </select>
     </div>
   {% endif %}
   <div>
-    <label for="f-action" class="block text-xs font-medium text-slate-700">Action</label>
-    <select id="f-action" name="action" class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm">
+    <label for="f-action" class="block text-xs font-medium text-muted">Action</label>
+    <select id="f-action" name="action" class="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm">
       <option value="">All actions</option>
       {% for a in actions %}<option value="{{ a }}" {% if filters.action == a %}selected{% endif %}>{{ a|label }}</option>{% endfor %}
     </select>
   </div>
   <div>
-    <label for="f-table" class="block text-xs font-medium text-slate-700">Record type</label>
-    <select id="f-table" name="table" class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm">
+    <label for="f-table" class="block text-xs font-medium text-muted">Record type</label>
+    <select id="f-table" name="table" class="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm">
       <option value="">All types</option>
       {% for t in tables %}<option value="{{ t }}" {% if filters.table == t %}selected{% endif %}>{{ t|label }}</option>{% endfor %}
     </select>
   </div>
   <div>
-    <label for="f-user" class="block text-xs font-medium text-slate-700">User</label>
-    <select id="f-user" name="user_id" class="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm">
+    <label for="f-user" class="block text-xs font-medium text-muted">User</label>
+    <select id="f-user" name="user_id" class="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm">
       <option value="">Everyone</option>
       {% for u in users %}<option value="{{ u.id }}" {% if filters.user_id == u.id %}selected{% endif %}>{{ u.name }}</option>{% endfor %}
     </select>
   </div>
-  <noscript><button type="submit" class="rounded bg-blue-700 px-3 py-1.5 text-sm font-medium text-white">Filter</button></noscript>
+  <noscript><button type="submit" class="rounded btn-primary px-3 py-1.5 text-sm font-medium">Filter</button></noscript>
 </form>
 
-<div class="mt-6 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
-  <table class="min-w-full divide-y divide-slate-200 text-sm">
+<div class="mt-6 overflow-x-auto rounded-2xl glass">
+  <table class="min-w-full divide-y divide-line text-sm">
     <caption class="sr-only">Audit log entries, newest first</caption>
-    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+    <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase tracking-wide text-muted">
       <tr>
         <th scope="col" class="px-4 py-3">When</th>
         <th scope="col" class="px-4 py-3">Who</th>
@@ -60,7 +60,7 @@
         <th scope="col" class="px-4 py-3">Details</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-slate-100">
+    <tbody class="divide-y divide-line/70">
       {% for e in entries %}
         <tr class="align-top">
           <td class="whitespace-nowrap px-4 py-3 tabular-nums">{{ e.created_at|localtime }}</td>
@@ -73,11 +73,11 @@
             {% if e.action == "update" and e.after %}
               <ul class="space-y-0.5">
                 {% for key, new in e.after.items() %}
-                  <li><span class="font-medium">{{ key|label }}:</span> <span class="text-slate-500 line-through">{{ e.before.get(key) if e.before else "" }}</span> → {{ new }}</li>
+                  <li><span class="font-medium">{{ key|label }}:</span> <span class="text-subtle line-through">{{ e.before.get(key) if e.before else "" }}</span> → {{ new }}</li>
                 {% endfor %}
               </ul>
             {% elif e.action in ("create", "delete") %}
-              <details><summary class="cursor-pointer text-blue-700 underline">View values</summary>
+              <details><summary class="cursor-pointer text-link underline">View values</summary>
                 <dl class="mt-1 grid grid-cols-[auto,1fr] gap-x-3 text-xs">
                   {% for key, value in (e.after or e.before).items() %}<dt class="font-medium">{{ key|label }}</dt><dd>{{ value }}</dd>{% endfor %}
                 </dl>
@@ -86,7 +86,7 @@
           </td>
         </tr>
       {% else %}
-        <tr><td colspan="6" class="px-4 py-8 text-center text-slate-600">No audit entries match these filters.</td></tr>
+        <tr><td colspan="6" class="px-4 py-8 text-center text-muted">No audit entries match these filters.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -94,7 +94,7 @@
 
 <nav aria-label="Audit log pages" class="mt-4 flex justify-between text-sm">
   {% set args = request.args.to_dict() %}
-  {% if page > 1 %}<a class="text-blue-700 underline" href="{{ url_for('audit.index', **dict(args, page=page - 1)) }}">Newer</a>{% else %}<span></span>{% endif %}
-  {% if has_next %}<a class="text-blue-700 underline" href="{{ url_for('audit.index', **dict(args, page=page + 1)) }}">Older</a>{% endif %}
+  {% if page > 1 %}<a class="text-link underline" href="{{ url_for('audit.index', **dict(args, page=page - 1)) }}">Newer</a>{% else %}<span></span>{% endif %}
+  {% if has_next %}<a class="text-link underline" href="{{ url_for('audit.index', **dict(args, page=page + 1)) }}">Older</a>{% endif %}
 </nav>
 {% endblock %}

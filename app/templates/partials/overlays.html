@@ -1,0 +1,51 @@
+{# Navigation overlay (opened by the Menu button) and the help dialog.
+   Native <dialog> gives focus trapping, Escape to close and an inert page behind. #}
+<dialog id="nav-overlay" aria-labelledby="nav-overlay-title"
+        class="glass m-0 h-full max-h-none w-full max-w-none rounded-none border-0 p-0 text-ink sm:m-auto sm:h-fit sm:max-h-[85vh] sm:max-w-3xl sm:rounded-3xl sm:border">
+  <div class="flex h-full flex-col sm:h-auto">
+    <div class="flex items-center justify-between gap-3 border-b border-line/70 px-4 py-3 sm:px-6">
+      <h2 id="nav-overlay-title" class="text-lg font-semibold">Menu</h2>
+      <button type="button" data-close-dialog class="glass-button rounded-full px-3 py-1 text-sm font-medium">Close<span class="sr-only"> menu</span></button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+      <ul class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+        {% for item in nav_items() %}
+          {% set active = request.endpoint == item.endpoint or (request.endpoint and request.endpoint.split('.')[0] == item.endpoint.split('.')[0] and item.endpoint.endswith('.index')) %}
+          <li>
+            <a href="{{ url_for(item.endpoint) }}" {% if active %}aria-current="page"{% endif %}
+               class="glass-button transition-soft flex h-full items-start gap-3 rounded-2xl p-3.5 hover:-translate-y-0.5 hover:ring-2 hover:ring-accent/40 {{ 'ring-2 ring-accent/50' if active }}">
+              <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent/15 text-link-strong">{{ icon(item.icon) }}</span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold">{{ item.label }}</span>
+                <span class="block text-xs text-muted">{{ item.description }}</span>
+              </span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+
+      {% if is_provider_user %}
+        <section aria-labelledby="overlay-carriers-h" class="mt-6">
+          <h3 id="overlay-carriers-h" class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">Switch carrier</h3>
+          <ul class="flex flex-wrap gap-2">
+            {% for t in provider_tenants() %}
+              <li>
+                {% set sf = switch_form() %}
+                <form method="post" action="{{ url_for('auth.switch_tenant') }}">
+                  {{ sf.csrf_token }}
+                  <input type="hidden" name="tenant_id" value="{{ t.id }}">
+                  <input type="hidden" name="next" value="{{ url_for('dashboard.carrier') }}">
+                  <button type="submit" class="glass-button transition-soft rounded-full px-3 py-1.5 text-sm font-medium hover:ring-2 hover:ring-accent/40 {{ 'text-link-strong ring-1 ring-accent/50' if active_tenant and active_tenant.id == t.id }}"
+                          {% if active_tenant and active_tenant.id == t.id %}aria-current="true"{% endif %}>{{ t.name }}</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+    </div>
+  </div>
+</dialog>
+
+{% include "partials/help_dialog.html" %}

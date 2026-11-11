@@ -1,8 +1,7 @@
-"""Sidebar navigation.
+"""Navigation: the Menu overlay and the bottom search bar's page results.
 
 Items are listed once here. An item only appears when its endpoint is
-registered (so the sidebar grows as features land) and, from the auth step on,
-when the current user's role is allowed to see it.
+registered and the current user's role is allowed to see it.
 """
 
 from __future__ import annotations
@@ -20,22 +19,89 @@ class NavItem:
     label: str
     endpoint: str
     area: str
+    icon: str
+    description: str = ""
+    keywords: str = ""  # extra words that suggest this page while typing in search
     provider_only: bool = False
     needs_tenant: bool = True
 
 
 NAV_ITEMS: tuple[NavItem, ...] = (
     NavItem(
-        "Carrier clients", "dashboard.provider", "dashboard", provider_only=True, needs_tenant=False
+        "Carrier clients",
+        "dashboard.provider",
+        "dashboard",
+        "carriers",
+        "Every carrier, most urgent first",
+        "clients companies tenants provider overview",
+        provider_only=True,
+        needs_tenant=False,
     ),
-    NavItem("Dashboard", "dashboard.carrier", "dashboard"),
-    NavItem("Drivers", "drivers.index", "drivers"),
-    NavItem("Fleet", "fleet.index", "fleet"),
-    NavItem("Hours of Service", "hos.index", "hos"),
-    NavItem("Training", "training.index", "training"),
-    NavItem("Import", "imports.index", "imports"),
-    NavItem("Integrations", "integrations.index", "integrations"),
-    NavItem("Audit log", "audit.index", "audit", needs_tenant=False),
+    NavItem(
+        "Dashboard",
+        "dashboard.carrier",
+        "dashboard",
+        "dashboard",
+        "What needs action and what's due",
+        "home overview status expiring overdue red yellow green",
+    ),
+    NavItem(
+        "Drivers",
+        "drivers.index",
+        "drivers",
+        "drivers",
+        "Qualification files, tests and hours",
+        "cdl medical card dq file mvr drug alcohol test students roster",
+    ),
+    NavItem(
+        "Fleet",
+        "fleet.index",
+        "fleet",
+        "fleet",
+        "Units, inspections and maintenance",
+        "trucks tractors trailers units dvir maintenance repairs shop registration inspection vin",
+    ),
+    NavItem(
+        "Hours of Service",
+        "hos.index",
+        "hos",
+        "hos",
+        "Last 7 days from the ELD",
+        "hos eld logs violations motive driving duty",
+    ),
+    NavItem(
+        "Training",
+        "training.index",
+        "training",
+        "training",
+        "Academy progress and certifications",
+        "academy students courses eldt hazmat certification",
+    ),
+    NavItem(
+        "Import",
+        "imports.index",
+        "imports",
+        "imports",
+        "Bring in your spreadsheets",
+        "upload excel csv spreadsheet xlsx templates mapping undo",
+    ),
+    NavItem(
+        "Integrations",
+        "integrations.index",
+        "integrations",
+        "integrations",
+        "Motive connection and sync",
+        "motive eld sync connect api",
+    ),
+    NavItem(
+        "Audit log",
+        "audit.index",
+        "audit",
+        "audit",
+        "Who changed what, and when",
+        "history changes log activity who",
+        needs_tenant=False,
+    ),
 )
 
 

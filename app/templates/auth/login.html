@@ -1,43 +1,47 @@
 {% extends "base.html" %}
 {% set page_title = "Log in" %}
-{% block sidebar %}{% endblock %}
+{% from "partials/icons.html" import icon with context %}
 {% block content %}
-<div class="mx-auto w-full max-w-md py-8 sm:py-16">
+<div class="mx-auto w-full max-w-md py-6 sm:py-14">
   <div class="text-center">
-    <p class="text-sm font-semibold uppercase tracking-wide text-blue-700">{{ provider_name }}</p>
-    <h1 class="mt-2 text-3xl font-bold">Fleet Compliance Hub</h1>
-    <p class="mt-2 text-slate-600">Driver files, hours, inspections and training on one screen.</p>
+    <span class="btn-primary mx-auto grid h-14 w-14 place-items-center rounded-[1.25rem]">{{ icon("logo", "h-8 w-8") }}</span>
+    <p class="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-link">{{ provider_name }}</p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight">Fleet Compliance Hub</h1>
+    <p class="mt-2 text-muted">Driver files, hours, inspections and training on one screen.</p>
   </div>
 
-  <form method="post" action="{{ url_for('auth.login') }}" class="mt-8 space-y-4 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200" novalidate>
+  <form method="post" action="{{ url_for('auth.login') }}" class="glass mt-8 space-y-4 rounded-3xl p-6" novalidate>
     {{ form.csrf_token }}
     {{ form.next }}
     {% for field in (form.email, form.password) %}
       <div>
-        {{ field.label(class="block text-sm font-medium text-slate-800") }}
-        {{ field(class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-base", autocomplete=("username" if field.name == "email" else "current-password"), required=True, **({"aria-invalid": "true", "aria-describedby": field.id ~ "-error"} if field.errors else {})) }}
+        {{ field.label(class="block text-sm font-medium") }}
+        {{ field(class="mt-1 block w-full rounded-xl border px-3 py-2.5 text-base", autocomplete=("username" if field.name == "email" else "current-password"), required=True, **({"aria-invalid": "true", "aria-describedby": field.id ~ "-error"} if field.errors else {})) }}
         {% for error in field.errors %}
-          <p id="{{ field.id }}-error" class="mt-1 text-sm text-red-700">{{ error }}</p>
+          <p id="{{ field.id }}-error" class="mt-1 text-sm text-danger-ink">{{ error }}</p>
         {% endfor %}
       </div>
     {% endfor %}
-    <button type="submit" class="w-full rounded-md bg-blue-700 px-4 py-2.5 font-semibold text-white hover:bg-blue-800">Log in</button>
+    <button type="submit" class="btn-primary transition-soft w-full rounded-xl px-4 py-2.5 font-semibold">Log in</button>
   </form>
 
   {% if demo_forms %}
-    <section aria-labelledby="demo-heading" class="mt-8 rounded-lg border border-dashed border-amber-400 bg-amber-50 p-6">
-      <h2 id="demo-heading" class="text-base font-semibold text-amber-950">Demo logins</h2>
-      <p class="mt-1 text-sm text-amber-900">One click to see the portal as each role. Demo mode only.</p>
-      <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+    <section aria-labelledby="demo-heading" class="glass mt-6 rounded-3xl p-6">
+      <div class="flex items-center gap-2">
+        <span class="rounded-full bg-warn-soft px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-warn-ink ring-1 ring-inset ring-warn-line/60">Demo</span>
+        <h2 id="demo-heading" class="text-base font-semibold">Demo logins</h2>
+      </div>
+      <p class="mt-1 text-sm text-muted">See the portal as each role. Only available in demo mode.</p>
+      <ul class="mt-4 grid gap-2.5 sm:grid-cols-2">
         {% for key, demo_form in demo_forms.items() %}
           {% set email, title, blurb = personas[key] %}
           <li>
-            <form method="post" action="{{ url_for('auth.demo_login') }}">
+            <form method="post" action="{{ url_for('auth.demo_login') }}" class="h-full">
               {{ demo_form.csrf_token }}
               {{ demo_form.persona }}
-              <button type="submit" class="h-full w-full rounded-md bg-white px-3 py-3 text-left ring-1 ring-amber-300 hover:bg-amber-100">
-                <span class="block text-sm font-semibold text-slate-900">{{ title }}</span>
-                <span class="block text-xs text-slate-700">{{ blurb }}</span>
+              <button type="submit" class="glass-button transition-soft h-full w-full rounded-2xl px-3.5 py-3 text-left hover:-translate-y-0.5 hover:ring-2 hover:ring-accent/40">
+                <span class="block text-sm font-semibold">{{ title }}</span>
+                <span class="block text-xs text-muted">{{ blurb }}</span>
               </button>
             </form>
           </li>

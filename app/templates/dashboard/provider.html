@@ -3,7 +3,7 @@
 {% set page_title = "Carrier clients" %}
 {% block content %}
 <h1 class="text-2xl font-bold">Carrier clients</h1>
-<p class="mt-1 text-sm text-slate-600">Every carrier {{ provider_name }} manages, most urgent first.</p>
+<p class="mt-1 text-sm text-muted">Every carrier {{ provider_name }} manages, most urgent first.</p>
 
 <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
   {{ stat_card("Carriers", rows|length) }}
@@ -12,10 +12,10 @@
   {{ stat_card("Due in 30 days", totals.yellow) }}
 </div>
 
-<div class="mt-6 overflow-x-auto rounded-lg bg-white ring-1 ring-slate-200">
-  <table class="min-w-full divide-y divide-slate-200 text-sm">
+<div class="mt-6 overflow-x-auto rounded-2xl glass">
+  <table class="min-w-full divide-y divide-line text-sm">
     <caption class="sr-only">Carrier clients sorted by urgency: most items needing action first</caption>
-    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+    <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase tracking-wide text-muted">
       <tr>
         <th scope="col" class="px-4 py-3">Carrier</th>
         <th scope="col" class="px-4 py-3">Drivers</th>
@@ -24,12 +24,12 @@
         <th scope="col" class="px-4 py-3"><span class="sr-only">Open</span></th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-slate-100">
+    <tbody class="divide-y divide-line/70">
       {% for row in rows %}
         <tr>
           <th scope="row" class="px-4 py-3 text-left font-semibold">
             {{ row.tenant.name }}
-            <span class="block text-xs font-normal text-slate-600">
+            <span class="block text-xs font-normal text-muted">
               {% if row.tenant.kind == "academy" %}Academy fleet{% else %}USDOT {{ row.tenant.dot_number }}{% endif %} · {{ row.tenant.city }}, {{ row.tenant.state }}
             </span>
           </th>
@@ -42,12 +42,12 @@
               {{ sf.csrf_token }}
               <input type="hidden" name="tenant_id" value="{{ row.tenant.id }}">
               <input type="hidden" name="next" value="{{ url_for('dashboard.carrier') }}">
-              <button type="submit" class="rounded-md bg-blue-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-800">Open<span class="sr-only"> {{ row.tenant.name }}</span></button>
+              <button type="submit" class="rounded-md btn-primary px-3 py-1.5 text-sm font-semibold">Open<span class="sr-only"> {{ row.tenant.name }}</span></button>
             </form>
           </td>
         </tr>
       {% else %}
-        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-600">No carrier clients yet. Run <code>python seed.py</code> to load demo data.</td></tr>
+        <tr><td colspan="5" class="px-4 py-8 text-center text-muted">No carrier clients yet. Run <code>python seed.py</code> to load demo data.</td></tr>
       {% endfor %}
     </tbody>
   </table>
