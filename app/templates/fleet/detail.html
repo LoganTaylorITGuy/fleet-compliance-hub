@@ -29,7 +29,7 @@
     <p class="text-xs text-muted">Synced from Motive (mock)</p>
     <ul class="mt-2 divide-y divide-line/70 rounded-2xl glass">
       {% for d in dvirs %}
-        <li class="px-4 py-3 text-sm{{ 'bg-danger-soft/70' if d.defect_found and not d.defect_resolved else '' }}">
+        <li class="px-4 py-3 text-sm {{ 'bg-danger-soft/70' if d.defect_found and not d.defect_resolved else '' }}">
           <div class="flex flex-wrap items-baseline justify-between gap-2">
             <span class="font-medium tabular-nums">{{ d.inspected_on|shortdate }}{% if d.driver %} · {{ d.driver.full_name }}{% endif %}</span>
             {% if not d.defect_found %}<span class="text-ok-ink"><span aria-hidden="true">✓ </span>No defects</span>
@@ -47,7 +47,7 @@
     <h2 id="maint-h" class="text-lg font-semibold">Maintenance history</h2>
     <ul class="mt-2 divide-y divide-line/70 rounded-2xl glass">
       {% for m in maintenance %}
-        <li class="px-4 py-3 text-sm{{ 'bg-info-soft/70' if m.status == 'open' else '' }}">
+        <li class="px-4 py-3 text-sm {{ 'bg-info-soft/70' if m.status == 'open' else '' }}">
           <div class="flex flex-wrap items-baseline justify-between gap-2">
             <span class="font-medium">{{ m.work_done }}</span>
             <span class="tabular-nums text-muted">{{ m.performed_on|shortdate }}</span>

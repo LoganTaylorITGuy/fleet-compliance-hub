@@ -6,7 +6,7 @@
     "green": ("bg-ok-soft text-ok-ink ring-ok-line", "✓"),
   } -%}
   {%- set cls, icon = styles[level.key] -%}
-  <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5{{ 'text-xs' if size == 'sm' else 'text-sm' }}font-semibold ring-1 ring-inset{{ cls }}">
+  <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 {{ 'text-xs' if size == 'sm' else 'text-sm' }} font-semibold ring-1 ring-inset {{ cls }}">
     <span aria-hidden="true">{{ icon }}</span>{{ level.text }}
   </span>
 {%- endmacro %}
@@ -82,7 +82,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro th(text, extra="") -%}<th scope="col" class="px-4 py-2{{ extra }}">{{ text }}</th>{%- endmacro %}
+{% macro th(text, extra="") -%}<th scope="col" class="px-4 py-2 {{ extra }}">{{ text }}</th>{%- endmacro %}
 
 {% macro export_button(dataset) -%}
   <a href="{{ url_for('exports.download', dataset=dataset) }}" class="inline-flex items-center gap-1.5 rounded-md border border-line-strong glass-button px-3 py-1.5 text-sm font-semibold text-ink hover:bg-tint/5" download>

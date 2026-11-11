@@ -44,7 +44,7 @@
                 <span aria-hidden="true">● </span>{{ "%.1f"|format(log.driving_hours) }}<span class="sr-only"> hours, violation: {{ log.violation_note }}</span>
               </td>
             {% elif log %}
-              <td class="px-3 py-2 text-center tabular-nums{{ 'text-subtle' if log.driving_hours == 0 else '' }}">{{ "%.1f"|format(log.driving_hours) if log.driving_hours else "off" }}</td>
+              <td class="px-3 py-2 text-center tabular-nums {{ 'text-subtle' if log.driving_hours == 0 else '' }}">{{ "%.1f"|format(log.driving_hours) if log.driving_hours else "off" }}</td>
             {% else %}
               <td class="px-3 py-2 text-center text-subtle">—<span class="sr-only">no log</span></td>
             {% endif %}

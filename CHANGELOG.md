@@ -6,8 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-11
+
+First proof-of-concept release.
+
 ### Added
 
+- README with screenshots in light and dark, quick start, demo logins, a
+  10-minute walkthrough, architecture, security notes, and "what this would
+  look like for real".
 - Flask app factory, environment-driven config, base layout with a responsive
   sidebar, skip link and demo disclaimer footer.
 - Precompiled Tailwind CSS (no CDN at runtime), ruff, pytest with coverage,
@@ -74,6 +81,10 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Status badges had lost their background color, and some responsive table
+  headers didn't hide on phones: a Jinja expression glued to a class name
+  (`py-2{{ extra }}`) produced invalid classes. A template lint test now
+  fails on this pattern.
 - Account and carrier menus in the header weren't actually blurred: an element
   with backdrop-filter becomes the backdrop for its children, so the header's
   own glass blocked theirs. The header's frosted layer now sits on a
@@ -89,3 +100,6 @@ All notable changes to this project are documented here. The format follows
   full screen width.
 - Seed data assigns red/yellow quotas per tenant instead of random dates per
   item, which had compounded into a mostly red fleet.
+
+[Unreleased]: https://github.com/LoganTaylorITGuy/fleet-compliance-hub/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/LoganTaylorITGuy/fleet-compliance-hub/releases/tag/v0.1.0
