@@ -16,7 +16,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from ..extensions import db
-from ..models import Driver, HOSLog, Vehicle
+from ..models import Driver, HOSLog, Tenant, Vehicle
+from ..tenancy import all_tenants
 from . import thresholds as t
 from .rules import Finding, Level, Status, driver_status, vehicle_status
 
@@ -142,3 +143,24 @@ def evaluate(today: date | None = None) -> dict[int, TenantSummary]:
         summary.tenant_id = vehicle.tenant_id
         summary.vehicles.append(VehicleRow(vehicle, vehicle_status(vehicle, today)))
     return dict(summaries)
+
+
+@dataclass
+class CarrierSummary:
+    tenant: Tenant
+    summary: TenantSummary
+
+
+def provider_carrier_summaries(provider_id: int, today: date) -> list[CarrierSummary]:
+    """Every carrier of one provider with its compliance summary, most urgent first.
+
+    Reads across tenants (``all_tenants()``) and keeps only this provider's
+    carriers, so another provider's data never shows. See ARCHITECTURE.md,
+    Known limitations, for why a provider-level scope would be better.
+    """
+    tenants = db.session.scalars(select(Tenant).where(Tenant.provider_id == provider_id)).all()
+    with all_tenants():
+        summaries = evaluate(today)
+    rows = [CarrierSummary(t, summaries.get(t.id, TenantSummary(t.id))) for t in tenants]
+    rows.sort(key=lambda r: (*r.summary.urgency, r.tenant.name))
+    return rows

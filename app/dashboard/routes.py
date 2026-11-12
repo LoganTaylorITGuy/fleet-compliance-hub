@@ -3,27 +3,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from flask import abort, g, render_template
 from flask_login import current_user
-from sqlalchemy import select
 
 from ..clock import today
 from ..compliance import TenantSummary, evaluate
-from ..compliance.service import Counts
-from ..extensions import db
-from ..models import Tenant
+from ..compliance.service import Counts, provider_carrier_summaries
 from ..permissions import is_provider, require_view
-from ..tenancy import all_tenants
 from ..views import tenant_required
 from . import bp
-
-
-@dataclass
-class TenantRow:
-    tenant: Tenant
-    summary: TenantSummary
 
 
 @bp.get("/provider")
@@ -32,15 +20,7 @@ def provider():
     """Every carrier client, most urgent first."""
     if not is_provider(current_user):
         abort(403)
-    tenants = db.session.scalars(
-        select(Tenant).where(Tenant.provider_id == current_user.provider_id)
-    ).all()
-    # Provider staff read across their own carriers; tenant rows are matched
-    # back to this provider's tenant list, so another provider's data never shows.
-    with all_tenants():
-        summaries = evaluate(today())
-    rows = [TenantRow(t, summaries.get(t.id, TenantSummary(t.id))) for t in tenants]
-    rows.sort(key=lambda r: (*r.summary.urgency, r.tenant.name))
+    rows = provider_carrier_summaries(current_user.provider_id, today())
     totals = Counts()
     for row in rows:
         c = row.summary.counts

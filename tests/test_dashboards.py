@@ -19,10 +19,10 @@ def login(client, email):
     return client
 
 
-def test_provider_lands_on_provider_dashboard(client, demo):
-    login(client, "admin@demo.example")
-    response = client.get("/")
-    assert response.headers["Location"].endswith("/dashboard/provider")
+def test_provider_dashboard_lists_carriers(client, demo):
+    html = login(client, "admin@demo.example").get("/dashboard/provider").get_data(as_text=True)
+    assert "Carrier clients" in html
+    assert "Red Draw Hauling Co." in html
 
 
 def test_provider_dashboard_ranks_carriers_by_urgency(client, demo):

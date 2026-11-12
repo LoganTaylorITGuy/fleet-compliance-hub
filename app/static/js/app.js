@@ -157,6 +157,21 @@
     section.hidden = items.length === 0;
   }
 
+  // ---- Home: "Pick up where you left off" ------------------------------------
+  // Same per-user, per-carrier store as the search bar's recents.
+  function renderLauncherRecents() {
+    var section = document.querySelector("[data-launcher-recents]");
+    if (!section) return;
+    var list = section.querySelector("[data-launcher-recents-list]");
+    var items = loadRecents().filter(function (r) { return isSafePath(r.url) && r.url !== location.pathname; }).slice(0, 4);
+    items.forEach(function (r) {
+      var li = resultRow({ url: r.url, title: r.title, detail: "", kind: r.kind });
+      li.firstChild.classList.add("glass");
+      list.append(li);
+    });
+    section.hidden = items.length === 0;
+  }
+
   function resultRow(r) {
     // Built with textContent: record names never become HTML.
     var li = document.createElement("li");
@@ -316,4 +331,5 @@
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", markTheme);
   markTheme();
   saveRecent();
+  renderLauncherRecents();
 })();

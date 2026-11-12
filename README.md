@@ -146,7 +146,7 @@ tunnel within seconds, so the link never outlives the script.
 
 ### A 10-minute walkthrough
 
-1. **Provider Admin:** carrier clients ranked by urgency.
+1. **Provider Admin:** Home greets you and ranks your carriers by urgency.
 2. Open **Red Draw Hauling Co.** and review *Needs action now*.
 3. Open the driver whose **medical card expires in 12 days** to see the full file.
 4. **Hours of Service:** a violation two days ago, synced from Motive (mock).
