@@ -112,3 +112,23 @@ def test_page_suggestions_carry_keywords(demo, demo_login):
     html = demo_login("owner@demo.example").get("/dashboard/").get_data(as_text=True)
     assert 'data-label="fleet"' in html
     assert "dvir" in html.split('data-label="fleet"')[1].split(">")[0]
+
+
+def test_bottom_bar_gap_does_not_follow_the_live_inset(demo, demo_login):
+    """The bar's gap uses the remembered maximum inset, not Safari's live value,
+    which changes as its toolbar collapses (the bar used to rise and drop)."""
+    html = demo_login("owner@demo.example").get("/dashboard/").get_data(as_text=True)
+    assert "dock-gap" in html and "data-safe-area-probe" in html
+    assert "env(safe-area-inset-bottom)" not in html
+    assert "dock-clearance" in html  # the footer clears the bar at any gap
+
+
+def test_steady_bar_css_and_scripts_are_wired():
+    from pathlib import Path
+
+    static = Path(__file__).resolve().parent.parent / "app" / "static"
+    css = (static / "css" / "app.css").read_text()
+    assert ".dock-gap{" in css and "--dock-safe-max" in css
+    assert "safe-area-max-inset-bottom" in css
+    assert "dock-safe-max" in (static / "js" / "theme.js").read_text()  # applied before paint
+    assert "data-safe-area-probe" in (static / "js" / "app.js").read_text()  # remembered

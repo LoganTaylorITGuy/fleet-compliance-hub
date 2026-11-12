@@ -367,3 +367,26 @@ dialog::backdrop {
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
+
+/* Bottom bar spacing that stays put while scrolling.
+   iOS Safari's env(safe-area-inset-bottom) changes as its toolbar collapses
+   and expands, which moved the bar up and down. The gap uses the largest
+   inset seen instead: env(safe-area-max-inset-bottom) where supported
+   (Chromium), and --dock-safe-max, remembered per device by app.js and
+   applied before first paint by theme.js, everywhere else. */
+.dock-gap {
+  padding-bottom: max(0.75rem, env(safe-area-max-inset-bottom, 0px), var(--dock-safe-max, 0px));
+}
+.dock-clearance {
+  margin-bottom: calc(5rem + max(env(safe-area-max-inset-bottom, 0px), var(--dock-safe-max, 0px)));
+}
+/* Invisible probe whose height tracks the live inset, read by app.js. */
+.safe-area-probe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  visibility: hidden;
+  pointer-events: none;
+}
