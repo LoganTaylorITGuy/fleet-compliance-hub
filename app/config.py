@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import ClassVar
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+SAMPLE_PROVIDER_LOGO = "brand/provider-logo-sample.webp"  # placeholder art, see scripts/
 
 
 def env_bool(name: str, default: bool = False) -> bool:
@@ -53,6 +54,9 @@ class Config:
     # Branding. The public repo ships a fictional provider; set PROVIDER_NAME to
     # show a real company name during a private demo.
     PROVIDER_NAME = env_str("PROVIDER_NAME", "High Plains Compliance Co.")
+    # The provider's own logo on the login page, as a path under app/static/.
+    # Unset, a sample logo is shown and labeled as a sample.
+    PROVIDER_LOGO = env_str("PROVIDER_LOGO", SAMPLE_PROVIDER_LOGO)
 
     # Demo mode turns on the one-click role switcher on the login page and lets
     # the Motive client return mock data. Never enable it in production.

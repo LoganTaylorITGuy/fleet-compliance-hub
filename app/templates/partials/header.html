@@ -2,7 +2,7 @@
 <header class="glass-bar sticky top-0 z-30">
   <div class="flex h-16 items-center gap-2 px-3 sm:gap-3 sm:px-6 lg:px-10">
     <a href="{{ url_for('main.index') }}" class="flex shrink-0 items-center gap-2.5" aria-label="Fleet Compliance Hub home">
-      <span class="btn-primary grid h-9 w-9 place-items-center rounded-xl">{{ icon("logo", "h-5 w-5") }}</span>
+      <img src="{{ url_for('static', filename='brand/icon-192.png') }}" alt="" width="36" height="36" class="h-9 w-9 rounded-full shadow-sm">{# decorative: the link has an aria-label #}
       <span class="hidden leading-tight lg:block">
         <span class="block text-[15px] font-semibold">Fleet Compliance Hub</span>
         <span class="block text-xs text-muted">{{ provider_name }}</span>

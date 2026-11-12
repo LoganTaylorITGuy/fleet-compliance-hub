@@ -8,6 +8,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Truck brand: a navy truck badge as the header logo, browser favicons (16 and
+  32 px), a 192 px icon and an iOS home-screen icon, replacing the shield.
+- `PROVIDER_LOGO` setting: the provider's own logo on the login page. Unset, a
+  sample logo is shown and labeled as a sample. Placeholder art, AI-generated.
+- `scripts/build-brand-assets.sh`: rebuilds every logo and icon from the source
+  art (transparent outside the badge ring, small palettes, iOS-safe icon).
 - `scripts/demo-tunnel.sh`: share a live demo over HTTPS with a Cloudflare
   quick tunnel, served by waitress on 127.0.0.1, with a QR code. A watchdog
   closes the tunnel if the script dies, even from `kill -9`.

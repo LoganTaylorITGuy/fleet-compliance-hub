@@ -79,7 +79,7 @@ def test_blank_env_values_fall_back_to_defaults(monkeypatch):
 def test_favicon_is_public(client):
     response = client.get("/favicon.ico")
     assert response.status_code == 301
-    assert response.headers["Location"].endswith("/static/favicon.svg")
+    assert response.headers["Location"].endswith("/static/brand/favicon-32.png")
 
 
 def _scheme_seen(app, headers):
@@ -116,3 +116,33 @@ def test_demo_tunnel_script_is_valid_bash():
     assert '--listen="127.0.0.1:$PORT"' in text  # never bound to the LAN
     assert "trap cleanup EXIT INT TERM HUP" in text
     assert "start_watchdog" in text
+
+
+def test_sample_provider_logo_is_labeled():
+    html = create_app(TestConfig).test_client().get("/login").get_data(as_text=True)
+    assert "/static/brand/provider-logo-sample.webp" in html
+    assert "Sample provider logo" in html
+
+
+def test_provider_logo_is_configurable():
+    app = create_app(TestConfig, PROVIDER_LOGO="brand/icon-192.png", PROVIDER_NAME="Example LLC")
+    html = app.test_client().get("/login").get_data(as_text=True)
+    assert "/static/brand/icon-192.png" in html
+    assert 'alt="Example LLC logo"' in html
+    assert "Sample provider logo" not in html
+
+
+def test_brand_assets_exist():
+    from pathlib import Path
+
+    from app.config import SAMPLE_PROVIDER_LOGO
+
+    static = Path(__file__).resolve().parent.parent / "app" / "static"
+    for name in (
+        SAMPLE_PROVIDER_LOGO,
+        "brand/icon-192.png",
+        "brand/favicon-32.png",
+        "brand/favicon-16.png",
+        "brand/apple-touch-icon.png",
+    ):
+        assert (static / name).is_file(), name
