@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import count_pills, stat_card with context %}
+{% from "partials/icons.html" import icon %}
 {% set page_title = "Carrier clients" %}
 {% block content %}
 <h1 class="text-2xl font-bold">Carrier clients</h1>
@@ -18,33 +19,39 @@
     <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase tracking-wide text-muted">
       <tr>
         <th scope="col" class="px-4 py-3">Carrier</th>
-        <th scope="col" class="px-4 py-3">Drivers</th>
-        <th scope="col" class="px-4 py-3">Units</th>
-        <th scope="col" class="px-4 py-3">Status (drivers and units)</th>
-        <th scope="col" class="px-4 py-3"><span class="sr-only">Open</span></th>
+        <th scope="col" class="hidden px-4 py-3 sm:table-cell">Drivers</th>
+        <th scope="col" class="hidden px-4 py-3 sm:table-cell">Units</th>
+        <th scope="col" class="px-4 py-3">Status<span class="hidden sm:inline"> (drivers and units)</span></th>
+        <th scope="col" class="w-8 px-2 py-3"><span class="sr-only">Open</span></th>
       </tr>
     </thead>
     <tbody class="divide-y divide-line/70">
       {% for row in rows %}
-        <tr>
+        {#- Opening a carrier is a POST: it changes the session's active tenant
+            and is audit-logged. The name is the submit button; its ::after
+            overlay stretches over the row, so the whole row is the tap target. -#}
+        <tr class="relative transition-colors hover:bg-tint/[0.05] focus-within:bg-tint/[0.05]">
           <th scope="row" class="px-4 py-3 text-left font-semibold">
-            {{ row.tenant.name }}
-            <span class="block text-xs font-normal text-muted">
-              {% if row.tenant.kind == "academy" %}Academy fleet{% else %}USDOT {{ row.tenant.dot_number }}{% endif %} · {{ row.tenant.city }}, {{ row.tenant.state }}
-            </span>
-          </th>
-          <td class="px-4 py-3 tabular-nums">{{ row.summary.drivers|length }}</td>
-          <td class="px-4 py-3 tabular-nums">{{ row.summary.vehicles|length }}</td>
-          <td class="px-4 py-3">{{ count_pills(row.summary.counts) }}</td>
-          <td class="px-4 py-3 text-right">
             {% set sf = switch_form() %}
             <form method="post" action="{{ url_for('auth.switch_tenant') }}">
               {{ sf.csrf_token }}
               <input type="hidden" name="tenant_id" value="{{ row.tenant.id }}">
               <input type="hidden" name="next" value="{{ url_for('dashboard.carrier') }}">
-              <button type="submit" class="rounded-md btn-primary px-3 py-1.5 text-sm font-semibold">Open<span class="sr-only"> {{ row.tenant.name }}</span></button>
+              <button type="submit" class="text-left font-semibold text-link underline decoration-1 underline-offset-2 hover:text-link-strong after:absolute after:inset-0 after:content-['']">
+                {{ row.tenant.name }}
+              </button>
             </form>
-          </td>
+            <span class="block text-xs font-normal text-muted">
+              {% if row.tenant.kind == "academy" %}Academy fleet{% else %}USDOT {{ row.tenant.dot_number }}{% endif %} · {{ row.tenant.city }}, {{ row.tenant.state }}
+            </span>
+            <span class="block text-xs font-normal text-muted sm:hidden">
+              {{ row.summary.drivers|length }} drivers · {{ row.summary.vehicles|length }} units
+            </span>
+          </th>
+          <td class="hidden px-4 py-3 tabular-nums sm:table-cell">{{ row.summary.drivers|length }}</td>
+          <td class="hidden px-4 py-3 tabular-nums sm:table-cell">{{ row.summary.vehicles|length }}</td>
+          <td class="px-4 py-3">{{ count_pills(row.summary.counts) }}</td>
+          <td class="w-8 px-2 py-3 text-muted">{{ icon("chevron-right", "h-5 w-5") }}</td>
         </tr>
       {% else %}
         <tr><td colspan="5" class="px-4 py-8 text-center text-muted">No carrier clients yet. Run <code>python seed.py</code> to load demo data.</td></tr>
