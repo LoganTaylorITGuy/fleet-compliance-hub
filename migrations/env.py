@@ -1,3 +1,5 @@
+"""Alembic environment: runs migrations against the Flask app's database."""
+
 import logging
 from logging.config import fileConfig
 

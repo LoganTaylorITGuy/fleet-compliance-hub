@@ -1,3 +1,5 @@
+"""Audit log: automatic row-level entries, suppressed bulk jobs, and page visibility."""
+
 from datetime import date
 
 from sqlalchemy import select

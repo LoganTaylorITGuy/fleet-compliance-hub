@@ -1,3 +1,5 @@
+"""Hours of service: a per-driver grid of daily logs with violations flagged."""
+
 from __future__ import annotations
 
 from datetime import timedelta

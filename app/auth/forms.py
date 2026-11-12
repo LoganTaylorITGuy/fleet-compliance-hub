@@ -1,3 +1,5 @@
+"""Forms for login, the demo role switcher, tenant switching and logout (all CSRF-protected)."""
+
 from flask_wtf import FlaskForm
 from wtforms import EmailField, HiddenField, IntegerField, PasswordField
 from wtforms.validators import DataRequired, Length

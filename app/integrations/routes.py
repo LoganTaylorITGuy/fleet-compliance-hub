@@ -1,3 +1,5 @@
+"""The Integrations page: Motive connection status and the Sync now action."""
+
 from __future__ import annotations
 
 from datetime import datetime

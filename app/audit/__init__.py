@@ -101,8 +101,14 @@ def _changes(obj) -> tuple[dict, dict]:
     return before, after
 
 
+def _audited(objects) -> list[TenantScoped]:
+    """Tenant data rows in a flush set, minus the audit rows themselves."""
+    return [o for o in objects if isinstance(o, TenantScoped) and not isinstance(o, AuditLog)]
+
+
 @event.listens_for(Session, "after_flush")
 def _write_audit_rows(session: Session, _flush_context) -> None:
+    """Write one AuditLog row per created, changed or deleted tenant row."""
     if _suppressed.get():
         return
     rows = []
@@ -123,17 +129,14 @@ def _write_audit_rows(session: Session, _flush_context) -> None:
             }
         )
 
-    for obj in session.new:
-        if isinstance(obj, TenantScoped) and not isinstance(obj, AuditLog):
-            add(obj, "create", None, _snapshot(obj))
-    for obj in session.dirty:
-        if isinstance(obj, TenantScoped) and not isinstance(obj, AuditLog):
-            before, after = _changes(obj)
-            if after:
-                add(obj, "update", before, after)
-    for obj in session.deleted:
-        if isinstance(obj, TenantScoped) and not isinstance(obj, AuditLog):
-            add(obj, "delete", _snapshot(obj), None)
+    for obj in _audited(session.new):
+        add(obj, "create", None, _snapshot(obj))
+    for obj in _audited(session.dirty):
+        before, after = _changes(obj)
+        if after:
+            add(obj, "update", before, after)
+    for obj in _audited(session.deleted):
+        add(obj, "delete", _snapshot(obj), None)
 
     if rows:
         # Core insert on the flush's own connection: same transaction, and it

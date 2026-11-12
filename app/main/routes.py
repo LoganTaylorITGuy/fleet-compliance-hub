@@ -1,3 +1,5 @@
+"""Home redirect, favicon, and the /healthz check used by hosting."""
+
 from flask import g, jsonify, redirect, url_for
 from flask_login import current_user
 

@@ -1,7 +1,8 @@
 """What each import type expects: fields, header synonyms, and how rows match.
 
-Adding an import type means adding one ImportSpec here plus its apply function
-in engine.py.
+Adding an import type means three entries: an ImportSpec here, a Resolver in
+resolvers.py (how rows match existing records), and a WRITE_FIELDS entry in
+engine.py (which parsed values are saved).
 """
 
 from __future__ import annotations

@@ -1,3 +1,5 @@
+"""Model constraints: carrier users need a tenant; CDL numbers are unique per tenant."""
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 

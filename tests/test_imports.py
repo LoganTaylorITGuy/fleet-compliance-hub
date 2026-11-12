@@ -474,3 +474,16 @@ def test_maintenance_import_and_unknown_unit(demo):
             user_id=None,
         )
         assert run.rows_added == 1
+
+
+# --- registry ------------------------------------------------------------------
+
+
+def test_every_import_type_is_fully_registered():
+    """Each ImportSpec needs a Resolver and WRITE_FIELDS entry (see specs.py)."""
+    from app.imports.resolvers import RESOLVERS
+
+    assert set(SPECS) == set(RESOLVERS) == set(engine.WRITE_FIELDS)
+    for key, (_, names) in engine.WRITE_FIELDS.items():
+        parsed = set(SPECS[key].field_names) | {"driver_id", "vehicle_id"}
+        assert set(names) <= parsed, f"{key} writes a field it never parses"

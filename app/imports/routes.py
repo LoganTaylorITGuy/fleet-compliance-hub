@@ -1,3 +1,6 @@
+"""The import wizard: upload, map columns, review and fix rows, commit, undo,
+and saved column-mapping templates."""
+
 from __future__ import annotations
 
 from flask import abort, flash, g, redirect, render_template, request, url_for

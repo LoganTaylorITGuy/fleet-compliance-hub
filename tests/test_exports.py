@@ -1,3 +1,5 @@
+"""Excel export: every dataset, tenant scoping, formula-injection escaping, permissions."""
+
 import io
 
 import pytest

@@ -1,3 +1,5 @@
+"""Compliance service against seeded data: scoping, status mix and urgency order."""
+
 from datetime import date
 
 from sqlalchemy import select

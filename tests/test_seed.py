@@ -1,3 +1,5 @@
+"""Demo seed: sizes, logins, planted demo records, tenant consistency, determinism."""
+
 from datetime import date, timedelta
 
 import pytest

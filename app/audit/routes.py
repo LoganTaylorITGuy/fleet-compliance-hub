@@ -1,3 +1,8 @@
+"""The Audit log page: filterable history of who changed what.
+
+Admins see it; Carrier Viewers never do (see ADMIN_ONLY_VIEW in permissions.py).
+"""
+
 from __future__ import annotations
 
 from contextlib import nullcontext

@@ -1,3 +1,5 @@
+"""Login, logout, demo switcher, CSRF, tenant switching and the role permission matrix."""
+
 import pytest
 from sqlalchemy import select
 
