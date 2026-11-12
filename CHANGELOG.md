@@ -33,6 +33,13 @@ All notable changes to this project are documented here. The format follows
   imports from the spreadsheet importer.
 - Audit hook: one helper picks the audited rows instead of three repeated checks.
 
+### Fixed
+
+- Provider dashboard on phones: the only way into a carrier was an Open button
+  in the last column, which sat off-screen (right edge at 444 px on a 390 px
+  phone). The carrier name now opens it, the whole row is the tap target, and
+  driver and unit counts move under the name below 640 px so the table fits.
+
 ## [0.1.0] - 2026-11-11
 
 First proof-of-concept release.

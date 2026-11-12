@@ -53,6 +53,21 @@ def test_open_carrier_from_provider_dashboard(client, demo):
     assert "Needs action now" in html
 
 
+def test_carrier_name_is_the_click_target(client, demo):
+    """Each carrier's name submits that row's open-carrier form (no off-screen button)."""
+    html = login(client, "admin@demo.example").get("/dashboard/provider").get_data(as_text=True)
+    table = html[html.index("<tbody") : html.index("</tbody>")]
+    forms = re.findall(r"<form .*?</form>", table, flags=re.S)
+    assert len(forms) == len(demo["tenants"])
+    for name, tenant_id in demo["tenants"].items():
+        form = next(f for f in forms if f'name="tenant_id" value="{tenant_id}"' in f)
+        assert 'action="/switch-tenant"' in form  # a POST (CSRF tested in test_auth.py)
+        button = re.search(r"<button[^>]*>(.*?)</button>", form, flags=re.S)
+        assert button.group(1).strip() == name
+        assert "after:inset-0" in button.group(0)  # stretched over the whole row
+    assert ">Open<" not in table
+
+
 def test_carrier_dashboard_shows_planted_items(client, demo):
     html = login(client, "owner@demo.example").get("/dashboard/").get_data(as_text=True)
     assert "Expiring in 30 days" in html
