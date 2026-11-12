@@ -1,3 +1,5 @@
+"""Fleet: tractors and trailers, DVIRs, maintenance and repairs."""
+
 from flask import Blueprint
 
 bp = Blueprint("fleet", __name__, url_prefix="/fleet")

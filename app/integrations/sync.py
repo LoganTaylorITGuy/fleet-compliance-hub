@@ -16,7 +16,7 @@ from sqlalchemy import func, select
 
 from .. import audit
 from ..extensions import db
-from ..imports.engine import normalize_key
+from ..identifiers import normalize_key
 from ..models import DVIR, Driver, HOSLog, IntegrationConnection, Vehicle
 from .motive import MockRoster, MotiveClient, RosterDriver, RosterVehicle
 

@@ -1,3 +1,5 @@
+"""App wiring: config, security headers, proxy trust, health check, error pages."""
+
 import pytest
 
 from app import create_app

@@ -1,35 +1,15 @@
-"""Demo data: one provider, three fictional carriers and an academy fleet.
-
-Everything is fake: company names, people, DOT/MC/CDL numbers and VINs. Dates
-are relative to the day you seed, so statuses stay realistic: re-seed the day
-before a demo.
-
-The random generator is seeded, so every run produces the same people and
-trucks. A few records are planted on purpose for the demo script:
-
-* Red Draw Hauling (the carrier the demo Carrier Admin/Viewer log in to) has a
-  driver whose medical card expires in 12 days, and a driver with an hours of
-  service violation 2 days ago.
-* One of its trailers has an open DVIR defect linked to an open repair in the
-  provider's in-house trailer shop.
-"""
+"""Generate the bulk of the demo data: drivers, fleet, HOS logs, DVIRs."""
 
 from __future__ import annotations
 
-import os
 import random
-from dataclasses import dataclass
-from datetime import UTC, date, datetime, time, timedelta
+from datetime import date, timedelta
 
 from faker import Faker
-from sqlalchemy import delete, select
 
-from .audit import audit_suppressed, record
-from .auth.services import hash_password
-from .extensions import db
-from .models import (
+from ..extensions import db
+from ..models import (
     DVIR,
-    AuditLog,
     Driver,
     DriverFileItem,
     DriverStatus,
@@ -38,72 +18,40 @@ from .models import (
     DrugTestType,
     FileItemType,
     HOSLog,
-    ImportRun,
-    ImportTemplate,
     IntegrationConnection,
     MaintenanceRecord,
     Provider,
     RepairStatus,
-    Role,
     ShopType,
     Tenant,
     TenantKind,
     TrainingCategory,
     TrainingRecord,
-    User,
     Vehicle,
     VehicleType,
 )
-from .tenancy import all_tenants
-
-SEED = 2026
-DEFAULT_PASSWORD = "fleet-demo-2026"  # noqa: S105 - documented demo password, override with SEED_PASSWORD
-HOS_DAYS = 30
-TRAILER_SHOP = "In-house trailer shop"
-
-VIN_CHARS = "ABCDEFGHJKLMNPRSTUVWXYZ0123456789"  # VINs never use I, O or Q
-
-
-@dataclass(frozen=True)
-class TenantPlan:
-    key: str
-    name: str
-    kind: str
-    city: str
-    drivers: int
-    tractors: int
-    trailers: int
-    students: int = 0
-
-
-def tenant_plans() -> list[TenantPlan]:
-    academy = os.environ.get("DEMO_ACADEMY_NAME", "").strip() or "High Plains Driving Academy"
-    return [
-        TenantPlan("small", "Cedar Mesa Freight LLC", TenantKind.CARRIER, "Canyon", 3, 3, 3),
-        TenantPlan("medium", "Red Draw Hauling Co.", TenantKind.CARRIER, "Hereford", 8, 6, 8),
-        TenantPlan("large", "Blue Stem Transport Inc.", TenantKind.CARRIER, "Amarillo", 15, 12, 16),
-        TenantPlan("academy", academy, TenantKind.ACADEMY, "Hereford", 2, 3, 2, students=6),
-    ]
-
-
-ACADEMY_COURSES = [
-    "CDL Class A: Theory (ELDT)",
-    "CDL Class A: Range Skills (ELDT)",
-    "CDL Class A: Road Skills (ELDT)",
-    "Pre-trip Inspection",
-]
-SAFETY_COURSES = [
-    ("Defensive Driving", TrainingCategory.SAFETY, 730),
-    ("Hazmat Endorsement Training", TrainingCategory.HAZMAT, 1095),
-    ("Winter Driving Safety", TrainingCategory.SAFETY, 365),
-    ("Cargo Securement", TrainingCategory.SAFETY, 730),
-]
+from .plans import (
+    ACADEMY_COURSES,
+    HOS_DAYS,
+    SAFETY_COURSES,
+    SEED,
+    TRAILER_SHOP,
+    VIN_CHARS,
+    TenantPlan,
+    tenant_plans,
+)
 
 
 class Seeder:
-    def __init__(self, today: date, password: str):
+    """Generates realistic bulk data from a fixed random seed.
+
+    Every random draw goes through self.rng / self.fake in a fixed order, so the
+    same seed and today's date always produce the same rows. Keep that in mind
+    when editing: adding or reordering a draw changes every row after it.
+    """
+
+    def __init__(self, today: date):
         self.today = today
-        self.password_hash = hash_password(password)
         self.rng = random.Random(SEED)
         self.fake = Faker("en_US")
         self.fake.seed_instance(SEED)
@@ -130,7 +78,8 @@ class Seeder:
 
     # -- build -------------------------------------------------------------
 
-    def run(self, provider_name: str) -> dict[str, Tenant]:
+    def run(self, provider_name: str) -> tuple[Provider, dict[str, Tenant]]:
+        """Create the provider and every tenant with its drivers, fleet and history."""
         provider = Provider(name=provider_name)
         db.session.add(provider)
         db.session.flush()
@@ -158,9 +107,7 @@ class Seeder:
             self.build_dvirs(tenant, vehicles, [d for d in drivers if not d.is_student])
             db.session.add(IntegrationConnection(tenant_id=tenant.id, service="motive"))
 
-        self.plant_demo_moments(tenants)
-        self.build_users(provider, tenants)
-        return tenants
+        return provider, tenants
 
     def build_drivers(self, tenant: Tenant, plan: TenantPlan) -> list[Driver]:
         drivers = []
@@ -481,157 +428,3 @@ class Seeder:
                 status=RepairStatus.COMPLETED,
             )
         )
-
-    def plant_demo_moments(self, tenants: dict[str, Tenant]) -> None:
-        """Make sure every step of the demo script has something to show."""
-        db.session.flush()
-        medium = tenants["medium"]
-        drivers = db.session.scalars(
-            select(Driver).where(Driver.tenant_id == medium.id).order_by(Driver.id)
-        ).all()
-
-        # 1. Medical card expiring in 12 days, otherwise a clean file.
-        featured = drivers[1]
-        featured.medical_card_expiration = self.days(12)
-        featured.cdl_expiration = self.days(900)
-        for training in featured.trainings:
-            training.expires_on = self.days(400)
-        for item in featured.file_items:
-            if item.due_on:
-                item.completed_on, item.due_on = self.days(-60), self.days(305)
-
-        # 2. HOS violation two days ago (red: within the last 7 days).
-        log = db.session.scalars(
-            select(HOSLog).where(
-                HOSLog.driver_id == drivers[2].id, HOSLog.log_date == self.days(-2)
-            )
-        ).one()
-        log.driving_hours, log.on_duty_hours, log.off_duty_hours = 11.75, 14.5, 9.5
-        log.violation, log.violation_note = True, "11-hour driving limit exceeded"
-
-        # 3. Trailer with an open DVIR defect, in the in-house trailer shop now.
-        trailer = db.session.scalars(
-            select(Vehicle)
-            .where(Vehicle.tenant_id == medium.id, Vehicle.vehicle_type == VehicleType.TRAILER)
-            .order_by(Vehicle.id)
-        ).first()
-        dvir = DVIR(
-            tenant_id=medium.id,
-            vehicle_id=trailer.id,
-            driver_id=drivers[0].id,
-            inspected_on=self.days(-1),
-            defects="Air leak at gladhand, brake chamber on axle 2 not holding pressure",
-            defect_found=True,
-            defect_resolved=False,
-            external_id="mock-dvir-demo-open",
-        )
-        db.session.add(dvir)
-        db.session.flush()
-        db.session.add(
-            MaintenanceRecord(
-                tenant_id=medium.id,
-                vehicle_id=trailer.id,
-                dvir_id=dvir.id,
-                performed_on=self.today,
-                work_done="Replace gladhand seal and axle 2 brake chamber (from DVIR)",
-                shop_type=ShopType.IN_HOUSE,
-                shop_name=TRAILER_SHOP,
-                status=RepairStatus.OPEN,
-            )
-        )
-
-        # 4. One failed random test in the large carrier (red).
-        large_driver = db.session.scalars(
-            select(Driver).where(Driver.tenant_id == tenants["large"].id).order_by(Driver.id)
-        ).all()[5]
-        db.session.add(
-            DrugAlcoholTest(
-                tenant_id=tenants["large"].id,
-                driver_id=large_driver.id,
-                test_type=DrugTestType.RANDOM,
-                tested_on=self.days(-4),
-                result=DrugTestResult.POSITIVE,
-            )
-        )
-        large_driver.status = DriverStatus.ON_LEAVE
-
-    def build_users(self, provider: Provider, tenants: dict[str, Tenant]) -> None:
-        def user(email, name, role, *, tenant=None, permissions=""):
-            db.session.add(
-                User(
-                    email=email,
-                    name=name,
-                    role=role,
-                    provider_id=provider.id if tenant is None else None,
-                    tenant_id=tenant.id if tenant else None,
-                    permissions=permissions,
-                    password_hash=self.password_hash,
-                )
-            )
-
-        user("admin@demo.example", "Dana Whitfield", Role.PROVIDER_ADMIN)
-        user("shop@demo.example", "Rusty Kemp", Role.PROVIDER_LIMITED, permissions="maintenance")
-        user("academy@demo.example", "Lena Ortiz", Role.PROVIDER_LIMITED, permissions="training")
-        user("owner@demo.example", "Cal Brennan", Role.CARRIER_ADMIN, tenant=tenants["medium"])
-        user("viewer@demo.example", "Jo Marsh", Role.CARRIER_VIEWER, tenant=tenants["medium"])
-        user("small-owner@demo.example", "Mae Collins", Role.CARRIER_ADMIN, tenant=tenants["small"])
-        user("large-owner@demo.example", "Wes Harlan", Role.CARRIER_ADMIN, tenant=tenants["large"])
-
-
-# Delete order: children before parents.
-_TABLES_IN_DELETE_ORDER = (
-    AuditLog,
-    ImportRun,
-    ImportTemplate,
-    IntegrationConnection,
-    MaintenanceRecord,
-    DVIR,
-    HOSLog,
-    TrainingRecord,
-    DrugAlcoholTest,
-    DriverFileItem,
-    Vehicle,
-    Driver,
-    User,
-    Tenant,
-    Provider,
-)
-
-
-def has_data() -> bool:
-    return db.session.scalars(select(Provider.id)).first() is not None
-
-
-def reset_all() -> None:
-    """Delete every row in every table. Local and demo databases only."""
-    with all_tenants():
-        for model in _TABLES_IN_DELETE_ORDER:
-            db.session.execute(delete(model))
-        db.session.commit()
-
-
-def seed_demo(
-    provider_name: str, *, today: date | None = None, password: str | None = None
-) -> dict:
-    """Load the demo data set. Returns a small summary for the CLI to print."""
-    today = today or date.today()
-    password = password or os.environ.get("SEED_PASSWORD", "").strip() or DEFAULT_PASSWORD
-    with all_tenants(), audit_suppressed():
-        tenants = Seeder(today, password).run(provider_name)
-        db.session.flush()
-        for tenant in tenants.values():
-            record("seed", f"Loaded demo data for {tenant.name}", tenant_id=tenant.id)
-        record("seed", "Loaded demo data set")
-        stamp = datetime.combine(today, time(6, 0), tzinfo=UTC)
-        for connection in db.session.scalars(select(IntegrationConnection)):
-            connection.last_synced_at = stamp
-        db.session.commit()
-        counts = {
-            plan_key: {
-                "name": t.name,
-                "drivers": db.session.query(Driver).filter_by(tenant_id=t.id).count(),
-                "vehicles": db.session.query(Vehicle).filter_by(tenant_id=t.id).count(),
-            }
-            for plan_key, t in tenants.items()
-        }
-    return counts

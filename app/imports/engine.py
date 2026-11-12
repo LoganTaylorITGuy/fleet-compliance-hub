@@ -1,12 +1,20 @@
 """Validate mapped rows, commit them, and undo an import.
 
+The pipeline for one uploaded file:
+
+1. build_rows(): parse every mapped cell (dates, numbers, choices) and collect
+   per-cell errors the user can fix on the review page.
+2. _resolve(): match each row to an existing record (see resolvers.py) and
+   flag duplicates within the file.
+3. commit(): write the valid rows in one transaction and keep a change list.
+4. undo(): replay that change list backwards.
+
 Runs inside the current tenant scope like everything else: lookups only see
 this carrier's drivers and units, and new rows are stamped with its tenant.
 """
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
@@ -25,15 +33,8 @@ from ..models import (
     utcnow,
 )
 from .parsing import parse_bool, parse_date, parse_int
-from .specs import ImportSpec
-
-MODELS = {
-    "Driver": Driver,
-    "Vehicle": Vehicle,
-    "TrainingRecord": TrainingRecord,
-    "DrugAlcoholTest": DrugAlcoholTest,
-    "MaintenanceRecord": MaintenanceRecord,
-}
+from .resolvers import RESOLVERS
+from .specs import FieldSpec, ImportSpec
 
 
 @dataclass
@@ -54,10 +55,6 @@ class RowResult:
     @property
     def ok(self) -> bool:
         return not self.errors and not self.skipped
-
-
-def normalize_key(text: str | None) -> str:
-    return re.sub(r"[\s\-]", "", (text or "")).upper()
 
 
 # --- building and validating -------------------------------------------------
@@ -103,7 +100,7 @@ def _parse_fields(spec: ImportSpec, result: RowResult) -> None:
         _split_name(result)
 
 
-def _parse_value(f, text: str):
+def _parse_value(f: FieldSpec, text: str) -> Any:
     match f.kind:
         case "date":
             return parse_date(text)
@@ -158,105 +155,6 @@ def _resolve(spec: ImportSpec, results: list[RowResult]) -> None:
         r.action = "update" if target is not None else "add"
 
 
-@dataclass
-class Resolver:
-    key_field: str
-    load: Any
-    match: Any
-
-
-def _drivers_by_cdl() -> dict[str, Driver]:
-    return {normalize_key(d.cdl_number): d for d in db.session.scalars(select(Driver))}
-
-
-def _vehicles() -> dict[str, dict[str, Vehicle]]:
-    vehicles = db.session.scalars(select(Vehicle)).all()
-    return {
-        "unit": {normalize_key(v.unit_number): v for v in vehicles},
-        "vin": {normalize_key(v.vin): v for v in vehicles if v.vin},
-    }
-
-
-def _match_driver(values, lookup):
-    key = normalize_key(values["cdl_number"])
-    values["cdl_number"] = key
-    return (key,), lookup.get(key), None
-
-
-def _match_vehicle(values, lookup):
-    unit = normalize_key(values["unit_number"])
-    values["unit_number"] = unit
-    vin = normalize_key(values.get("vin")) or None
-    if vin:
-        values["vin"] = vin
-    target = lookup["unit"].get(unit) or (lookup["vin"].get(vin) if vin else None)
-    return (unit,), target, None
-
-
-def _load_training():
-    drivers = _drivers_by_cdl()
-    existing = {
-        (t.driver_id, t.course_name.lower()): t for t in db.session.scalars(select(TrainingRecord))
-    }
-    return drivers, existing
-
-
-def _match_training(values, lookup):
-    drivers, existing = lookup
-    driver = drivers.get(normalize_key(values["cdl_number"]))
-    if driver is None:
-        return None, None, "No driver with that CDL number. Import drivers first."
-    values["driver_id"] = driver.id
-    key = (driver.id, values["course_name"].lower())
-    return key, existing.get(key), None
-
-
-def _load_tests():
-    drivers = _drivers_by_cdl()
-    existing = {
-        (t.driver_id, t.test_type, t.tested_on): t
-        for t in db.session.scalars(select(DrugAlcoholTest))
-    }
-    return drivers, existing
-
-
-def _match_test(values, lookup):
-    drivers, existing = lookup
-    driver = drivers.get(normalize_key(values["cdl_number"]))
-    if driver is None:
-        return None, None, "No driver with that CDL number. Import drivers first."
-    values["driver_id"] = driver.id
-    key = (driver.id, values["test_type"], values["tested_on"])
-    return key, existing.get(key), None
-
-
-def _load_maintenance():
-    units = _vehicles()["unit"]
-    existing = {
-        (m.vehicle_id, m.performed_on, m.work_done.lower()): m
-        for m in db.session.scalars(select(MaintenanceRecord))
-    }
-    return units, existing
-
-
-def _match_maintenance(values, lookup):
-    units, existing = lookup
-    vehicle = units.get(normalize_key(values["unit_number"]))
-    if vehicle is None:
-        return None, None, "No unit with that number. Import vehicles first."
-    values["vehicle_id"] = vehicle.id
-    key = (vehicle.id, values["performed_on"], values["work_done"].lower())
-    return key, existing.get(key), None
-
-
-RESOLVERS = {
-    "drivers": Resolver("cdl_number", _drivers_by_cdl, _match_driver),
-    "vehicles": Resolver("unit_number", _vehicles, _match_vehicle),
-    "training": Resolver("cdl_number", _load_training, _match_training),
-    "drug_tests": Resolver("cdl_number", _load_tests, _match_test),
-    "maintenance": Resolver("unit_number", _load_maintenance, _match_maintenance),
-}
-
 # Which parsed values are written to the model, per import type.
 WRITE_FIELDS = {
     "drivers": (
@@ -309,10 +207,15 @@ WRITE_FIELDS = {
 }
 
 
+# Model class by name, for undo (ImportRun.changes stores the name, not the class).
+MODELS = {model.__name__: model for model, _ in WRITE_FIELDS.values()}
+
+
 # --- commit and undo -----------------------------------------------------------
 
 
-def _plain(value):
+def _plain(value: Any) -> Any:
+    """JSON-safe copy of a column value, for the undo snapshot."""
     return value.isoformat() if isinstance(value, date) else value
 
 

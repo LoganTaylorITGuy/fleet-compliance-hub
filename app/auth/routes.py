@@ -1,3 +1,6 @@
+"""Login and logout, demo one-click logins, provider tenant switching, and the
+per-request hook that sets the tenant scope every query runs under."""
+
 from __future__ import annotations
 
 from flask import abort, current_app, flash, g, redirect, render_template, request, session, url_for

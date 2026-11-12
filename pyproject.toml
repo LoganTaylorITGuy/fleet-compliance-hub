@@ -42,12 +42,13 @@ target-version = "py312"
 extend-exclude = ["migrations/versions"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+# D100/D104: every module and package says what it is for. C901: keep functions small.
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "D100", "D104", "C901"]
 ignore = ["S101"]  # assert is fine in tests
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S105", "S106"]  # demo passwords in tests
-"seed.py" = ["S311"]           # random is fine for fake data
+"app/seed/**" = ["S311"]       # random is fine for fake data
 "app/integrations/**" = ["S311"]
 
 [tool.pytest.ini_options]

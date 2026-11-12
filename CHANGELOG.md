@@ -13,6 +13,20 @@ All notable changes to this project are documented here. The format follows
   closes the tunnel if the script dies, even from `kill -9`.
 - `TRUST_PROXY` setting to honor X-Forwarded-* headers behind a proxy or tunnel
   (off by default, so clients can't spoof HTTPS).
+- Lint now requires a docstring on every module and package (ruff D100/D104)
+  and caps function complexity (C901).
+- Tests for the shared identifier rule and for import type registration.
+
+### Changed
+
+- `app/seed.py` is now the `app/seed/` package: `plans.py` (the shape of the
+  data set), `generator.py` (seeded random bulk data) and `scenario.py`
+  (hand-placed demo records and logins). Seeded data is unchanged, row for row.
+- Import row matching moved from `imports/engine.py` to `imports/resolvers.py`,
+  with typed `Resolver` and `Match` objects.
+- `normalize_key` moved to `app/identifiers.py`, so the Motive sync no longer
+  imports from the spreadsheet importer.
+- Audit hook: one helper picks the audited rows instead of three repeated checks.
 
 ## [0.1.0] - 2026-11-11
 

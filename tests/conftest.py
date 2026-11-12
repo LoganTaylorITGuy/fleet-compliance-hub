@@ -1,3 +1,5 @@
+"""Shared fixtures: the app, a two-carrier `world`, the seeded `demo` data set, and logins."""
+
 import pytest
 
 from app import create_app

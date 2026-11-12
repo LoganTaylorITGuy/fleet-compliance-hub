@@ -1,3 +1,5 @@
+"""Training records and academy student progress, with Mark complete."""
+
 from __future__ import annotations
 
 from flask import abort, flash, redirect, render_template, request, url_for

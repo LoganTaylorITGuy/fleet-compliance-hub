@@ -1,3 +1,6 @@
+"""Dashboards: the provider's ranked list of carriers, and one carrier's
+"needs action now" view."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

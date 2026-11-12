@@ -1,3 +1,6 @@
+"""Fleet list, unit detail (registration, inspection, DVIRs, maintenance), and
+logging or completing repairs."""
+
 from __future__ import annotations
 
 from flask import abort, flash, redirect, render_template, request, url_for

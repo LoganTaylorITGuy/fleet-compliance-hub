@@ -1,3 +1,5 @@
+"""Hours of service logs synced from the ELD."""
+
 from flask import Blueprint
 
 bp = Blueprint("hos", __name__, url_prefix="/hours")
