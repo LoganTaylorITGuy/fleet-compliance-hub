@@ -86,8 +86,16 @@ def test_provider_with_carrier_sees_that_carrier(home):
 
 def test_red_counts_badge_the_matching_tiles(home):
     html = home("owner@demo.example")
-    badges = re.findall(r'(\d+)<span class="sr-only"> need action</span>', html)
+    badges = re.findall(r'<span class="sr-only">, (\d+) need action</span>', html)
     assert badges and all(int(n) > 0 for n in badges)
+
+
+def test_tile_names_come_before_badges(home):
+    """Screen readers hear "Dashboard ..., 4 need action", not the count first."""
+    html = home("owner@demo.example")
+    tiles = html[html.index('id="tiles-heading"') :]
+    tile = re.search(r'<a href="/dashboard/"[^>]*>(.*?)</a>', tiles, flags=re.S).group(1)
+    assert tile.index("Dashboard") < tile.index("need action")
 
 
 def test_home_is_not_recorded_as_a_recent_page(home):
