@@ -17,7 +17,7 @@ def index():
 
 @bp.get("/favicon.ico")
 def favicon():
-    return redirect(url_for("static", filename="favicon.svg"), code=301)
+    return redirect(url_for("static", filename="brand/favicon-32.png"), code=301)
 
 
 @bp.get("/healthz")

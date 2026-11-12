@@ -101,6 +101,12 @@ off and you log in with an email and password.
 
 To reload fresh demo data (dates are relative to today): `python seed.py --reset`.
 
+**Branding.** Each provider can show its own name and logo: set
+`PROVIDER_NAME` and `PROVIDER_LOGO` (a path under `app/static/`). Unset, the
+login page shows a sample logo labeled as a sample. The sample logo and the
+truck icon are placeholder art (AI-generated); `scripts/build-brand-assets.sh`
+rebuilds the favicons, home-screen icon and logo from source images.
+
 ### Demo logins
 
 With `DEMO_MODE=true`, the login page has one-click buttons for each role. To

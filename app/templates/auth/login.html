@@ -1,10 +1,16 @@
 {% extends "base.html" %}
 {% set page_title = "Log in" %}
-{% from "partials/icons.html" import icon with context %}
 {% block content %}
 <div class="mx-auto w-full max-w-md py-6 sm:py-14">
   <div class="text-center">
-    <span class="btn-primary mx-auto grid h-14 w-14 place-items-center rounded-[1.25rem]">{{ icon("logo", "h-8 w-8") }}</span>
+    <figure>
+      <img src="{{ url_for('static', filename=provider_logo) }}" width="160" height="160"
+           alt="{% if provider_logo_is_sample %}Sample provider logo: POC Logistics{% else %}{{ provider_name }} logo{% endif %}"
+           class="mx-auto h-36 w-36 rounded-3xl object-cover shadow-lg ring-1 ring-line sm:h-40 sm:w-40">
+      {% if provider_logo_is_sample %}
+        <figcaption class="mt-2 text-xs text-muted">Sample provider logo: each provider shows its own</figcaption>
+      {% endif %}
+    </figure>
     <p class="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-link">{{ provider_name }}</p>
     <h1 class="mt-2 text-3xl font-bold tracking-tight">Fleet Compliance Hub</h1>
     <p class="mt-2 text-muted">Driver files, hours, inspections and training on one screen.</p>

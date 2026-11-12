@@ -6,7 +6,7 @@ from pathlib import Path
 
 from flask import Flask, render_template
 
-from .config import Config, resolve_secret_key
+from .config import SAMPLE_PROVIDER_LOGO, Config, resolve_secret_key
 from .extensions import csrf, db, login_manager, migrate
 
 
@@ -99,6 +99,8 @@ def _register_template_globals(app: Flask) -> None:
     def inject_globals() -> dict:
         return {
             "provider_name": app.config["PROVIDER_NAME"],
+            "provider_logo": app.config["PROVIDER_LOGO"],
+            "provider_logo_is_sample": app.config["PROVIDER_LOGO"] == SAMPLE_PROVIDER_LOGO,
             "demo_mode": app.config["DEMO_MODE"],
             "nav_items": visible_nav_items,
             "active_tenant": g.get("active_tenant"),
