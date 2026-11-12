@@ -33,11 +33,12 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="px-4 pb-5 text-center text-xs text-subtle sm:px-6 {{ 'mb-20' if current_user.is_authenticated }}">
+  <footer class="px-4 pb-5 text-center text-xs text-subtle sm:px-6 {{ 'dock-clearance' if current_user.is_authenticated }}">
     Demo only. Not legal or regulatory advice. Rules simplified for illustration.
   </footer>
 
   {% if current_user.is_authenticated %}
+    <div class="safe-area-probe" data-safe-area-probe aria-hidden="true"></div>
     {% include "partials/dock.html" %}
     {% include "partials/overlays.html" %}
   {% else %}

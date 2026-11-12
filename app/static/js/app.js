@@ -328,6 +328,27 @@
     if (message && !window.confirm(message)) event.preventDefault();
   });
 
+  // ---- Steady bottom bar ---------------------------------------------------------
+  // iOS Safari's safe-area inset grows when its toolbar collapses and shrinks
+  // when it returns, which moved the bar up and down while scrolling. Keep the
+  // largest inset this device has reported, so the gap only ever grows, and
+  // remember it so later page loads start there (theme.js applies it).
+  var probe = document.querySelector("[data-safe-area-probe]");
+  if (probe && "ResizeObserver" in window) {
+    new ResizeObserver(function () {
+      var inset = Math.round(probe.getBoundingClientRect().height);
+      var known = parseFloat(getComputedStyle(root).getPropertyValue("--dock-safe-max")) || 0;
+      if (inset > known && inset <= 100) {
+        root.style.setProperty("--dock-safe-max", inset + "px");
+        try {
+          localStorage.setItem("dock-safe-max", String(inset));
+        } catch (e) {
+          /* storage blocked: still steady for this page */
+        }
+      }
+    }).observe(probe);
+  }
+
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", markTheme);
   markTheme();
   saveRecent();

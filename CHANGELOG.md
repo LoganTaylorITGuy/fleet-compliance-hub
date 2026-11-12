@@ -49,6 +49,11 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Bottom bar on iPhone Safari rose and dropped while scrolling: its gap followed
+  Safari's safe-area inset, which changes as the toolbar collapses and
+  expands. The gap now uses the largest inset seen, from
+  `env(safe-area-max-inset-bottom)` where supported (Chromium) and a value
+  remembered per device everywhere else, so it moves at most once per device.
 - Provider dashboard on phones: the only way into a carrier was an Open button
   in the last column, which sat off-screen (right edge at 444 px on a 390 px
   phone). The carrier name now opens it, the whole row is the tap target, and
