@@ -16,6 +16,11 @@ All notable changes to this project are documented here. The format follows
 - Lint now requires a docstring on every module and package (ruff D100/D104)
   and caps function complexity (C901).
 - Tests for the shared identifier rule and for import type registration.
+- `docs/ARCHITECTURE.md`: request lifecycle, where each rule lives, module map,
+  data model, feature flows, how-to recipes and known limitations.
+- `docs/adr/`: ten architecture decision records.
+- `tests/test_architecture.py`: feature packages don't import each other, shared
+  modules don't import features, and compliance rules stay pure.
 
 ### Changed
 

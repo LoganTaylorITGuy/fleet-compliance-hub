@@ -21,6 +21,16 @@
 
 ## Ground rules
 
+- **Know where a change belongs.** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+  lists the one place each rule lives (tenancy, permissions, audit, compliance
+  rules, identifiers). Feature packages don't import each other;
+  `tests/test_architecture.py` enforces it.
+- **Record decisions.** A change to how the system is built (a new dependency,
+  storage, hosting, a security boundary) gets an ADR in [docs/adr/](docs/adr/).
+  Don't edit an accepted ADR to reverse it; supersede it with a new one.
+- **Every module says what it is for.** Lint requires a module or package
+  docstring (ruff D100/D104) and keeps function complexity in check (C901).
+
 - **Tenant isolation is not optional.** Every compliance table carries a
   `tenant_id`, and queries are filtered in one place (`app/tenancy.py`). Do not
   bypass it in a view. If a new model holds carrier data, it inherits

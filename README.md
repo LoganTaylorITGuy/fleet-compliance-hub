@@ -176,15 +176,22 @@ app/
   tenancy.py        tenant isolation: one query filter + one write guard
   permissions.py    the role table: who can view or edit each area
   audit/            automatic audit log + the Audit log page
+  identifiers.py    one matching rule for CDL, unit and VIN values
   compliance/       red/yellow/green rules (pure functions), thresholds, loader
-  imports/          parsing, column matching, validation, commit and undo
+  imports/          parsing, column matching, row resolvers, commit and undo
   integrations/     Motive client (mock) and the sync job
+  seed/             demo data: plans, seeded generator, planted demo scenario
   dashboard/ drivers/ fleet/ hos/ training/   feature pages
   templates/ static/                          UI, design tokens, theme
 migrations/         Alembic
 samples/            deliberately messy spreadsheets
-tests/              302 tests
+tests/              pytest suite, including architecture rules
 ```
+
+The full tour is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): one request
+start to finish, where each rule lives, the data model, feature flows, how to
+add a page, model, rule or import type, and known limitations. Each design
+decision has a short record in [docs/adr/](docs/adr/).
 
 ## Security and tenant isolation
 
@@ -213,7 +220,8 @@ tests/              302 tests
 - **Protected `main`:** changes land by pull request only, and the rule
   applies to admins too. Each build step was its own PR; see the
   [closed pull requests](https://github.com/LoganTaylorITGuy/fleet-compliance-hub/pulls?q=is%3Apr+is%3Aclosed).
-- **Six required checks on every PR:** `lint` (ruff), `test` (pytest with
+- **Six required checks on every PR:** `lint` (ruff, including module
+  docstrings and a complexity limit), `test` (pytest with
   coverage, 97%), `tenant-isolation`, `migrations (sqlite)`,
   `migrations (postgresql)` (fresh database, upgrade, drift check, seed,
   downgrade), and `audit` (pip-audit).
@@ -221,8 +229,9 @@ tests/              302 tests
   checks WCAG AA contrast for every text color in both themes, composited over
   the translucent glass. Status never relies on color alone, and every page is
   checked at phone width.
-- **Docs:** [CHANGELOG](CHANGELOG.md), [CONTRIBUTING](CONTRIBUTING.md) and a
-  pull request template with a testing checklist.
+- **Docs:** [ARCHITECTURE](docs/ARCHITECTURE.md), [decision records](docs/adr/),
+  [CHANGELOG](CHANGELOG.md), [CONTRIBUTING](CONTRIBUTING.md) and a pull request
+  template with a testing checklist.
 
 ## What this would look like for real
 
