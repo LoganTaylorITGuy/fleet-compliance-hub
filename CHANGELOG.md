@@ -8,6 +8,11 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Home (launcher) after sign-in: a time-of-day greeting with Monday, Friday and
+  weekend touches; provider staff see their carriers ranked by urgency, carrier
+  users see their counts at a glance; recently viewed pages; and a tile for
+  every page the user's role allows, with "need action" badges. Home is the
+  first Menu item.
 - Truck brand: a navy truck badge as the header logo, browser favicons (16 and
   32 px), a 192 px icon and an iOS home-screen icon, replacing the shield.
 - `PROVIDER_LOGO` setting: the provider's own logo on the login page. Unset, a
@@ -30,6 +35,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Signing in lands on Home instead of a dashboard.
+- Provider carrier ranking moved to `compliance.service.provider_carrier_summaries`,
+  shared by the provider dashboard and Home.
 - `app/seed.py` is now the `app/seed/` package: `plans.py` (the shape of the
   data set), `generator.py` (seeded random bulk data) and `scenario.py`
   (hand-placed demo records and logins). Seeded data is unchanged, row for row.

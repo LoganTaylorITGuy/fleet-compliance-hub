@@ -28,6 +28,15 @@ class NavItem:
 
 NAV_ITEMS: tuple[NavItem, ...] = (
     NavItem(
+        "Home",
+        "main.index",
+        "dashboard",
+        "home",
+        "Your start page",
+        "start launcher welcome",
+        needs_tenant=False,
+    ),
+    NavItem(
         "Carrier clients",
         "dashboard.provider",
         "dashboard",

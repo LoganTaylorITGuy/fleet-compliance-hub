@@ -98,7 +98,7 @@ forgotten in one view or applied two different ways.
 | Which areas a role can use | `app/permissions.py` | [ADR 0001](adr/0001-tenant-isolation-in-the-orm.md) |
 | What gets audited | `app/audit/__init__.py` | [ADR 0003](adr/0003-automatic-audit-log.md) |
 | Red / yellow / green | `app/compliance/rules.py` + `thresholds.py` | [ADR 0004](adr/0004-pure-compliance-rules.md) |
-| What "today" means | `app/clock.py` (US Central) | [ADR 0004](adr/0004-pure-compliance-rules.md) |
+| What "now" and "today" mean | `app/clock.py` (US Central) | [ADR 0004](adr/0004-pure-compliance-rules.md) |
 | How CDL / unit / VIN values match | `app/identifiers.py` | Shared by import and Motive sync |
 | Colors and themes | `app/static/css/input.css` design tokens | [ADR 0006](adr/0006-precompiled-tailwind-and-design-tokens.md) |
 | Configuration and secrets | `app/config.py` (environment only) | No secrets in the repo |
@@ -121,11 +121,11 @@ app/
   permissions.py      role table: can_view / can_edit / decorators
   audit/              automatic audit hook + the Audit log page
   identifiers.py      normalize CDL / unit / VIN for matching
-  clock.py            today() in US Central time
+  clock.py            now() and today() in US Central time
   formatting.py       Jinja filters (dates, labels)
   views.py            small view helpers (tenant_required, link_for)
   listing.py          shared list-page filters (status level, search term)
-  navigation.py       Menu overlay items, filtered by role
+  navigation.py       Menu items and Home tiles, filtered by role
   search.py           quick search behind the bottom bar
 
   # Domain logic (no Flask, no request)
@@ -135,7 +135,10 @@ app/
     service.py        loads rows efficiently, applies the rules
 
   # Feature blueprints (one folder per area of the app)
-  auth/  main/  dashboard/  drivers/  fleet/  hos/  training/
+  main/
+    routes.py         Home (launcher), favicon, health check
+    greetings.py      time-of-day greetings (pure, unit tested)
+  auth/  dashboard/  drivers/  fleet/  hos/  training/
   imports/
     parsing.py        read .xlsx/.csv, parse messy dates/numbers/booleans
     specs.py          what each import type expects (fields, synonyms)
@@ -223,6 +226,17 @@ synced log through today, DVIRs for the last two days, and current odometers.
 Past days are never rewritten. In demo mode `MotiveClient` returns generated
 data; real endpoints are deliberately left as marked TODOs until checked
 against Motive's documentation. See [ADR 0008](adr/0008-motive-behind-a-client-boundary.md).
+
+### Home (launcher)
+
+Everyone lands on Home after signing in. It shows a time-of-day greeting
+(`main/greetings.py`), then what fits the user's context: provider staff with no
+carrier picked see their carriers ranked by urgency
+(`compliance.service.provider_carrier_summaries`, shared with the provider
+dashboard); anyone in a carrier sees its counts at a glance. Below that, recently
+viewed pages (this browser only, from the same store as the search bar) and a
+tile for every page `navigation.visible_nav_items()` allows, so Home can never
+offer a page the user's role can't open.
 
 ### Compliance status
 
