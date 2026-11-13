@@ -390,3 +390,66 @@ dialog::backdrop {
   visibility: hidden;
   pointer-events: none;
 }
+
+/* ==========================================================================
+   Audit packet (templates/drivers/packet.html), printed or saved as PDF.
+   Paper is always light: the color tokens are pinned to the light theme's
+   values even when the screen is in dark mode. tests/test_print_styles.py
+   checks they match :root, so a token change can't leave print behind.
+   !important is needed to beat the dark-theme selectors' specificity.
+   ========================================================================== */
+
+@media print {
+  :root {
+    color-scheme: light !important;
+    --canvas: 236 241 248 !important;
+    --ink: 15 23 42 !important;
+    --muted: 61 74 94 !important;
+    --subtle: 82 96 117 !important;
+    --line: 203 213 225 !important;
+    --line-strong: 148 163 184 !important;
+    --tint: 15 23 42 !important;
+    --link: 29 78 216 !important;
+    --danger-soft: 254 226 226 !important;
+    --danger-ink: 127 29 29 !important;
+    --danger-line: 248 113 113 !important;
+    --warn-soft: 254 243 199 !important;
+    --warn-ink: 120 53 15 !important;
+    --warn-line: 245 158 11 !important;
+    --ok-soft: 209 250 229 !important;
+    --ok-ink: 6 78 59 !important;
+    --ok-line: 52 211 153 !important;
+  }
+
+  @page { margin: 14mm; }
+
+  html, body { background: #fff; }
+
+  /* Only the packet prints: no header, bottom bar, toolbar or footer. */
+  body > header,
+  body > footer,
+  .dock-gap,
+  .safe-area-probe,
+  .packet-toolbar { display: none !important; }
+
+  main { padding: 0 !important; max-width: none !important; }
+
+  .packet {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Keep status badge tints. Tables print in full instead of scrolling, rows
+     never split across pages, and a heading never ends a page. */
+  .packet { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .packet .overflow-x-auto { overflow: visible; }
+  .packet tr { break-inside: avoid; }
+  .packet h2 { break-after: avoid; }
+}

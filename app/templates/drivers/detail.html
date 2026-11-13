@@ -8,6 +8,9 @@
   <h1 class="text-2xl font-bold">{{ driver.full_name }}</h1>
   {{ status_badge(status.level, size="md") }}
   {% if driver.is_student %}<span class="rounded bg-tint/10 px-2 py-0.5 text-xs font-semibold">Academy student</span>{% endif %}
+  <a href="{{ url_for('drivers.packet', driver_id=driver.id) }}" class="ml-auto inline-flex items-center gap-1.5 rounded-md border border-line-strong glass-button px-3 py-1.5 text-sm font-semibold text-ink hover:bg-tint/5">
+    <span aria-hidden="true">⎙</span> Audit packet
+  </a>
 </div>
 
 <div class="mt-6 grid gap-6 lg:grid-cols-3">
