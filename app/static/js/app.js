@@ -56,6 +56,9 @@
 
     if (t.closest("[data-theme-toggle]")) return setTheme(effectiveTheme() === "dark" ? "light" : "dark");
 
+    // Audit packet: the browser's print dialog also offers "Save as PDF".
+    if (t.closest("[data-print]")) return window.print();
+
     var opener = t.closest("[data-open-dialog]");
     if (opener) {
       closePopovers();

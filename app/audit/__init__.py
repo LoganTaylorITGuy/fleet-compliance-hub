@@ -56,19 +56,23 @@ def record(
     record_id: int | None = None,
     tenant_id: int | None = None,
     user_id: int | None = None,
-) -> None:
-    """Add a summary audit entry (login, import, sync...) to the current session."""
+) -> AuditLog:
+    """Add a summary audit entry (login, import, sync...) to the current session.
+
+    Returns the entry so a caller can cite its id once flushed. The driver
+    audit packet prints it as the packet's reference number.
+    """
     scope = current_scope()
-    db.session.add(
-        AuditLog(
-            user_id=user_id if user_id is not None else current_user_id(),
-            tenant_id=tenant_id if tenant_id is not None else scope.tenant_id,
-            action=action,
-            table_name=table_name,
-            record_id=record_id,
-            summary=summary[:300],
-        )
+    entry = AuditLog(
+        user_id=user_id if user_id is not None else current_user_id(),
+        tenant_id=tenant_id if tenant_id is not None else scope.tenant_id,
+        action=action,
+        table_name=table_name,
+        record_id=record_id,
+        summary=summary[:300],
     )
+    db.session.add(entry)
+    return entry
 
 
 def _plain(value):

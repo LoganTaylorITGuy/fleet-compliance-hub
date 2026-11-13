@@ -243,6 +243,7 @@ def test_guessed_ids_in_urls_return_404(demo, demo_login):
     client = demo_login("owner@demo.example")  # Red Draw's Carrier Admin
     for method, path in (
         ("get", f"/drivers/{ids['driver']}"),
+        ("get", f"/drivers/{ids['driver']}/packet"),
         ("post", f"/drivers/{ids['driver']}/edit"),
         ("get", f"/fleet/{ids['vehicle']}"),
         ("post", f"/fleet/{ids['vehicle']}/maintenance"),

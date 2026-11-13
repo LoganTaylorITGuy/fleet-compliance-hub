@@ -17,6 +17,7 @@ away.
 | [0008](0008-motive-behind-a-client-boundary.md) | Motive behind a client boundary, mocked in demo mode | Accepted |
 | [0009](0009-demo-hosting-via-quick-tunnel.md) | Demo hosting through a temporary Cloudflare quick tunnel | Accepted |
 | [0010](0010-deterministic-seed-with-planted-scenario.md) | Deterministic seed data with a planted demo scenario | Accepted |
+| [0011](0011-print-first-audit-packet.md) | Driver audit packet as a print-first page, logged on every pull | Accepted |
 
 Template:
 
