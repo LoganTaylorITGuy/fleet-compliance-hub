@@ -316,6 +316,11 @@ This is a proof of concept. These are known and deliberate for now:
   would need shared storage (object storage) for `instance/uploads`.
 - **No background worker.** Sync runs on request ("Sync now"). Production
   would schedule it.
+- **Missing file items don't count in the rules.** The driver page and audit
+  packet show a missing qualification-file item in red, but `driver_status`
+  only checks due dates on items that exist. A driver can be "Current" with a
+  red checklist line until the rules add it
+  ([ADR 0011](adr/0011-print-first-audit-packet.md)).
 - **Hosting is out of scope.** The demo runs through a temporary tunnel
   ([ADR 0009](adr/0009-demo-hosting-via-quick-tunnel.md)); a real deployment
   is sketched in the README under "What this would look like for real".

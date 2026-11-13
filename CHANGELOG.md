@@ -8,6 +8,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Driver audit packet (`/drivers/<id>/packet`, "Audit packet" on each driver
+  page): compliance status, qualification summary, file checklist with a status
+  per item, drug and alcohol tests, training, 7 days of hours of service, and
+  review lines. Prints, or saves as PDF, as a plain light document from either
+  theme. Every pull is written to the audit log, and its entry number is
+  printed on the packet as the reference. See ADR 0011.
 - Home (launcher) after sign-in: a time-of-day greeting with Monday, Friday and
   weekend touches; provider staff see their carriers ranked by urgency, carrier
   users see their counts at a glance; recently viewed pages; and a tile for
@@ -29,7 +35,7 @@ All notable changes to this project are documented here. The format follows
 - Tests for the shared identifier rule and for import type registration.
 - `docs/ARCHITECTURE.md`: request lifecycle, where each rule lives, module map,
   data model, feature flows, how-to recipes and known limitations.
-- `docs/adr/`: ten architecture decision records.
+- `docs/adr/`: architecture decision records (eleven so far).
 - `tests/test_architecture.py`: feature packages don't import each other, shared
   modules don't import features, and compliance rules stay pure.
 

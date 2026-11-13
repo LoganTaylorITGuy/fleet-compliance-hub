@@ -53,6 +53,9 @@ tested on every change.
 - **Drivers, Fleet, Hours of Service and Training** pages with search,
   filters and detail views: the driver qualification file checklist, DVIRs
   linked to shop repairs, and academy student progress.
+- **Driver audit packet:** one click turns a driver's file into a printable
+  document (or PDF, from the print dialog) with per-item status and review
+  lines. Each packet is logged, and its audit log number is printed on it.
 - **Spreadsheet import** for the messy files fleets really keep: column
   matching suggested from headers, saved templates, dates in any common format,
   fix-or-skip for bad rows, and **undo**. **Excel export** on every table.
@@ -148,7 +151,8 @@ tunnel within seconds, so the link never outlives the script.
 
 1. **Provider Admin:** Home greets you and ranks your carriers by urgency.
 2. Open **Red Draw Hauling Co.** and review *Needs action now*.
-3. Open the driver whose **medical card expires in 12 days** to see the full file.
+3. Open the driver whose **medical card expires in 12 days** to see the full file,
+   then **Audit packet**: the same file as a dated, printable document.
 4. **Hours of Service:** a violation two days ago, synced from Motive (mock).
 5. **Fleet → TR501:** an open DVIR defect with its repair in the in-house trailer
    shop. **Mark repair complete** resolves it.
@@ -250,8 +254,9 @@ This POC shows the shape of the product. A production build would add:
   the driver file, with malware scanning and retention rules.
 - **Email and text alerts:** "medical card expires in 30 days" sent to the
   right person before it turns red.
-- **Audit-ready reports:** a driver qualification file packet or fleet
-  inspection summary as PDF, ready for a DOT audit.
+- **More audit-ready reports:** the driver packet exists today (printed from
+  the browser); next would be a fleet inspection summary, and PDFs generated
+  on the server to email or archive automatically.
 - **Rules reviewed by a compliance professional** against current FMCSA
   regulations, plus Clearinghouse queries.
 - **SSO and MFA**, user management screens, and per-carrier settings.
