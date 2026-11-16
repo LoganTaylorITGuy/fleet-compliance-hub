@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "partials/macros.html" import count_pills with context %}
+{% from "partials/macros.html" import count_pills, count_legend with context %}
 {% from "partials/icons.html" import icon %}
 {% set page_title = "Home" %}
 {% set skip_recent = true %}
@@ -38,6 +38,7 @@
   {#- Provider staff with no carrier picked: their carriers, most urgent first. -#}
   <section aria-labelledby="carriers-heading" class="mt-8">
     <h2 id="carriers-heading" class="text-sm font-semibold uppercase tracking-wide text-muted">Your carriers</h2>
+    <div class="mt-2">{{ count_legend() }}</div>
     <ul class="mt-3 grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
       {% for row in carriers %}
         <li class="relative rounded-2xl glass p-4 transition-colors hover:bg-tint/[0.05] focus-within:bg-tint/[0.05]">

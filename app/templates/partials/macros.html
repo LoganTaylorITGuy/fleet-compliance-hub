@@ -14,9 +14,21 @@
 {% macro count_pills(counts) -%}
   <span class="inline-flex flex-wrap gap-1.5 text-xs font-semibold">
     <span class="rounded bg-danger-soft px-1.5 py-0.5 text-danger-ink"><span aria-hidden="true">● </span>{{ counts.red }}<span class="sr-only"> action needed</span></span>
-    <span class="rounded bg-warn-soft px-1.5 py-0.5 text-warn-ink"><span aria-hidden="true">▲ </span>{{ counts.yellow }}<span class="sr-only"> due soon</span></span>
+    <span class="rounded bg-warn-soft px-1.5 py-0.5 text-warn-ink"><span aria-hidden="true">▲ </span>{{ counts.yellow }}<span class="sr-only"> due in 30 days</span></span>
     <span class="rounded bg-ok-soft px-1.5 py-0.5 text-ok-ink"><span aria-hidden="true">✓ </span>{{ counts.green }}<span class="sr-only"> current</span></span>
   </span>
+{%- endmacro %}
+
+{#- Visible key for count_pills. A legend, not hover text: phones have no hover,
+    and the pills sit under each row's full-size click target. Screen readers
+    already hear each pill's meaning, so this is hidden from them. -#}
+{% macro count_legend() -%}
+  <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted" aria-hidden="true" data-count-legend>
+    <span class="font-semibold text-danger-ink">● Action needed</span>
+    <span class="font-semibold text-warn-ink">▲ Due in 30 days</span>
+    <span class="font-semibold text-ok-ink">✓ Current</span>
+    <span>Drivers and units, each counted once by its most urgent item.</span>
+  </p>
 {%- endmacro %}
 
 {% macro record_link(obj) -%}

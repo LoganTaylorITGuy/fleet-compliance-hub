@@ -39,6 +39,7 @@ def test_provider_dashboard_ranks_carriers_by_urgency(client, demo):
     ]
     assert order == sorted(order)
     assert "action needed" in html  # screen-reader text on the count pills
+    assert "data-count-legend" in html  # visible key for the same pills
 
 
 def test_open_carrier_from_provider_dashboard(client, demo):

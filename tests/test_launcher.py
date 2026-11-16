@@ -105,3 +105,12 @@ def test_home_is_not_recorded_as_a_recent_page(home):
 def test_home_is_in_the_menu_for_everyone(home):
     for email in ("owner@demo.example", "viewer@demo.example", "shop@demo.example"):
         assert 'href="/"' in home(email)
+
+
+def test_carrier_cards_have_a_visible_status_legend(home):
+    """Phones have no hover, so the count pills get a visible key, not tooltips."""
+    html = home("admin@demo.example")
+    section = html[html.index("Your carriers") : html.index('id="tiles-heading"')]
+    assert "data-count-legend" in section
+    for label in ("Action needed", "Due in 30 days", "Current"):
+        assert label in section

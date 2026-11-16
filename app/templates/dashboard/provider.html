@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "partials/macros.html" import count_pills, stat_card with context %}
+{% from "partials/macros.html" import count_pills, count_legend, stat_card with context %}
 {% from "partials/icons.html" import icon %}
 {% set page_title = "Carrier clients" %}
 {% block content %}
@@ -13,7 +13,8 @@
   {{ stat_card("Due in 30 days", totals.yellow) }}
 </div>
 
-<div class="mt-6 overflow-x-auto rounded-2xl glass">
+<div class="mt-6">{{ count_legend() }}</div>
+<div class="mt-2 overflow-x-auto rounded-2xl glass">
   <table class="min-w-full divide-y divide-line text-sm">
     <caption class="sr-only">Carrier clients sorted by urgency: most items needing action first</caption>
     <thead class="bg-tint/[0.035] text-left text-xs font-semibold uppercase tracking-wide text-muted">
